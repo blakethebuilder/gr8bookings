@@ -18,6 +18,7 @@
 | bookings | pbc_986407980 | Customer bookings with payment + waiver status |
 | gm_blocks | pbc_1534854836 | Game Master manual time blocks |
 | settings | pbc_2769025244 | Key-value config (Payfast, WhatsApp, etc.) |
+| waivers | pbc_2788641419 | Player indemnity waivers with signatures |
 
 ## Business Rules
 - **Room Lockout:** 100% Private per booking. Booking a slot locks the entire room block (`time_slots.status = 'full'`).
@@ -35,7 +36,7 @@
 - [x] Phase 2: Core React Frontend & Tailwind Setup
 - [x] Phase 3: Game Master HQ (FullCalendar Grid + Realtime SSE)
 - [x] Phase 4: Public Booking Widget & Payfast ITN Integration
-- [ ] Phase 5: Indemnity / E-Waiver System (`/waiver/:id`)
+- [x] Phase 5: Indemnity / E-Waiver System (`/waiver/:id`)
 - [ ] Phase 6: Evolution API WhatsApp Integration & Cron Reminders
 
 ## Change Log & Recent Actions
@@ -47,3 +48,5 @@
 - Phase 1 & 2 complete. Frontend running at localhost:5173, PocketBase admin at localhost:8090/_/.
 - Phase 3 complete. Game Master HQ at /gm with FullCalendar (week/day views), realtime SSE subscriptions, slot generator (auto-fills Thu-Sun 11:00-18:00), GM block creator.
 - Phase 4 complete. Public booking flow at /book: room selector → date picker → slot picker → details form → Payfast redirect. Confirmation page at /book/confirm/:reference. Payfast ITN webhook server on port 3001.
+- Phase 5 complete. E-waiver page at /waiver/:id with canvas signature, auto-fill from booking, minor/guardian support. Shareable waiver link on confirmation page. Waivers collection tracking signatures.
+- Critical fixes: calendar now uses time_slot dates (not booking.created), event detail modal replaces alert(), realtime indicator fixed.
