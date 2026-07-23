@@ -1,0 +1,39 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --gr8-red: #E53935;
+  --gr8-gold: #FFB900;
+  --gr8-dark: #0d0d0d;
+  --gr8-card: #1e1e1e;
+}
+
+body {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background-color: var(--gr8-dark);
+  color: white;
+}
+
+.btn-gr8 {
+  background: linear-gradient(135deg, #E53935, #C62828);
+  color: white;
+  font-weight: 700;
+  padding: 0.75rem 2rem;
+  border-radius: 0.5rem;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.btn-gr8:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(229, 57, 53, 0.4);
+}
+
+.card-dark {
+  background: var(--gr8-card);
+  border: 1px solid #333;
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+}
