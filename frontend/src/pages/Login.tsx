@@ -18,7 +18,10 @@ export default function Login() {
 
     const success = await login(email, pin)
     if (success) {
-      navigate('/gm')
+      // Route by role
+      const stored = localStorage.getItem('gr8_staff')
+      const staff = stored ? JSON.parse(stored) : null
+      navigate(staff?.role === 'grandmaster' ? '/grandmaster' : '/gm')
     } else {
       setError('Invalid email or PIN code')
     }
