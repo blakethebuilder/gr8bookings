@@ -12,6 +12,7 @@ import StaffManagement from './pages/StaffManagement'
 import Book from './pages/Book'
 import BookConfirm from './pages/BookConfirm'
 import Waiver from './pages/Waiver'
+import PublicAvailability from './pages/PublicAvailability'
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
 
       {/* Public routes */}
       <Route path="/login" element={<Login />} />
+      <Route path="/availability" element={<PublicAvailability />} />
       <Route path="/book" element={<Book />} />
       <Route path="/book/confirm/:reference" element={<BookConfirm />} />
       <Route path="/waiver/:id" element={<Waiver />} />

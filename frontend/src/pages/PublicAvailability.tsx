@@ -1,0 +1,178 @@
+import { useEffect, useState } from 'react'
+import { Calendar, Clock, Users, Loader2, ChevronLeft, ChevronRight } from 'lucide-react'
+import { format, addDays, startOfWeek, isSameDay, getDay } from 'date-fns'
+import pb, { type Room, type TimeSlot } from '../lib/pocketbase'
+
+export default function PublicAvailability() {
+  const [rooms, setRooms] = useState<Room[]>([])
+  const [slots, setSlots] = useState<TimeSlot[]>([])
+  const [loading, setLoading] = useState(true)
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date())
+  const [weekOffset, setWeekOffset] = useState(0)
+
+  useEffect(() => {
+    async function load() {
+      try {
+        const roomsData = await pb.collection('rooms').getFullList<Room>({
+          sort: 'sort_order',
+          filter: 'is_active = true',
+        })
+        setRooms(roomsData)
+
+        // Load slots for the next 4 weeks
+        const startDate = addDays(new Date(), weekOffset * 7)
+        const endDate = addDays(startDate, 28)
+
+        const slotsData = await pb.collection('time_slots').getFullList<TimeSlot>({
+          filter: `status = "available" && date >= "${format(startDate, 'yyyy-MM-dd')}" && date <= "${format(endDate, 'yyyy-MM-dd')}"`,
+          sort: 'date,start_time',
+        })
+        setSlots(slotsData)
+      } catch (e) {
+        console.error('Failed to load availability:', e)
+      } finally {
+        setLoading(false)
+      }
+    }
+    load()
+  }, [weekOffset])
+
+  // Generate week days
+  const weekStart = addDays(new Date(), weekOffset * 7)
+  const weekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i))
+
+  // Filter slots for selected date
+  const slotsForDate = slots.filter(s => {
+    const slotDate = new Date(s.date.split(' ')[0])
+    return isSameDay(slotDate, selectedDate)
+  })
+
+  // Group slots by room
+  const slotsByRoom = rooms.map(room => ({
+    room,
+    slots: slotsForDate.filter(s => s.room === room.id),
+  }))
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center">
+        <Loader2 className="animate-spin text-gr8-red" size={32} />
+      </div>
+    )
+  }
+
+  return (
+    <div className="min-h-screen bg-[#0a0a0a]">
+      {/* Header */}
+      <header className="border-b border-white/10 py-4 px-6">
+        <div className="max-w-6xl mx-auto flex items-center justify-between">
+          <a href="/" className="text-xl font-black text-white tracking-tight">
+            THE GR8 <span className="text-gr8-red">ESCAPE</span>
+          </a>
+          <a href="/book" className="btn-gr8 text-sm px-5 py-2">Book Now</a>
+        </div>
+      </header>
+
+      <div className="max-w-6xl mx-auto px-6 py-10">
+        {/* Title */}
+        <div className="text-center mb-8">
+          <h1 className="text-4xl font-black text-white mb-2">
+            Check <span className="text-gr8-red">Availability</span>
+          </h1>
+          <p className="text-gray-400">See what's free before you book. We're open Thu–Sun, 11:00–18:00.</p>
+        </div>
+
+        {/* Week navigation */}
+        <div className="flex items-center justify-center gap-4 mb-6">
+          <button
+            onClick={() => setWeekOffset(prev => Math.max(0, prev - 1))}
+            disabled={weekOffset === 0}
+            className="p-2 rounded-lg bg-white/5 text-gray-400 hover:text-white disabled:opacity-30 transition-colors"
+          >
+            <ChevronLeft size={20} />
+          </button>
+          <span className="text-white font-bold">
+            {format(weekStart, 'MMM d')} – {format(addDays(weekStart, 6), 'MMM d, yyyy')}
+          </span>
+          <button
+            onClick={() => setWeekOffset(prev => prev + 1)}
+            className="p-2 rounded-lg bg-white/5 text-gray-400 hover:text-white transition-colors"
+          >
+            <ChevronRight size={20} />
+          </button>
+        </div>
+
+        {/* Day selector */}
+        <div className="flex gap-2 mb-8 overflow-x-auto pb-2 justify-center">
+          {weekDays.map(day => {
+            const dayNum = getDay(day)
+            const isBusinessDay = dayNum === 0 || dayNum === 4 || dayNum === 5 || dayNum === 6
+            const isSelected = isSameDay(day, selectedDate)
+            const slotsForDay = slots.filter(s => isSameDay(new Date(s.date.split(' ')[0]), day))
+
+            return (
+              <button
+                key={day.toISOString()}
+                onClick={() => isBusinessDay && setSelectedDate(day)}
+                disabled={!isBusinessDay}
+                className={`flex flex-col items-center min-w-[80px] p-3 rounded-xl transition-all ${
+                  isSelected
+                    ? 'bg-gr8-red text-white'
+                    : isBusinessDay
+                      ? 'bg-white/5 text-gray-300 hover:bg-white/10'
+                      : 'bg-white/2 text-gray-700 cursor-not-allowed'
+                }`}
+              >
+                <span className="text-xs uppercase">{format(day, 'EEE')}</span>
+                <span className="text-xl font-bold">{format(day, 'd')}</span>
+                <span className="text-xs">{format(day, 'MMM')}</span>
+                {isBusinessDay && (
+                  <span className={`text-[10px] mt-1 ${slotsForDay.length > 0 ? 'text-green-400' : 'text-gray-600'}`}>
+                    {slotsForDay.length} slots
+                  </span>
+                )}
+              </button>
+            )
+          })}
+        </div>
+
+        {/* Slots by room */}
+        <div className="space-y-6">
+          {slotsByRoom.map(({ room, slots: roomSlots }) => (
+            <div key={room.id} className="card-dark">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-4 h-4 rounded-full" style={{ backgroundColor: room.color }} />
+                <h3 className="text-lg font-bold text-white">{room.name}</h3>
+                <span className="text-xs text-gray-500">R{room.price_per_player}/pp • {room.duration_minutes}min</span>
+              </div>
+
+              {roomSlots.length === 0 ? (
+                <p className="text-gray-600 text-sm py-4 text-center">No available slots for this date.</p>
+              ) : (
+                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2">
+                  {roomSlots.map(slot => (
+                    <a
+                      key={slot.id}
+                      href={`/book?room=${room.slug}&date=${slot.date.split(' ')[0]}&time=${slot.start_time}`}
+                      className="bg-white/5 border border-gray-700/50 rounded-lg p-3 text-center hover:border-gr8-red/50 hover:bg-gr8-red/10 transition-all group"
+                    >
+                      <p className="text-white font-bold group-hover:text-gr8-red transition-colors">{slot.start_time}</p>
+                      <p className="text-[10px] text-gray-500">{slot.end_time}</p>
+                    </a>
+                  ))}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+
+        {/* CTA */}
+        <div className="text-center mt-10">
+          <a href="/book" className="btn-gr8 text-lg px-10 py-4 inline-flex items-center gap-2">
+            <Calendar size={20} /> Book Your Escape
+          </a>
+        </div>
+      </div>
+    </div>
+  )
+}
