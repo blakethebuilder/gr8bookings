@@ -1,14 +1,14 @@
 # Known Issues & Gaps
 
-## Security (Fix Before Production)
+## Security
 
-| Issue | Severity | Fix |
-|-------|----------|-----|
-| All collection rules are public | High | Switch to PocketBase auth (requires recreating staff collection with auth enabled) |
-| Payfast passphrase on client | Medium | Move signature generation to server-side webhook |
-| No input validation | Low | Add email/phone format validation on booking forms |
-| Booking auto-confirms without ITN | Medium | Any user can visit `/book/confirm/ANYREF` to auto-confirm |
-| No rate limiting on booking creation | Low | Add rate limit middleware |
+| Issue | Severity | Status |
+|-------|----------|--------|
+| Collection rules public | High | ⚠️ Open — needs PocketBase auth recreate |
+| Payfast secrets on client | Medium | ✅ Fixed — server-side signature |
+| No input validation | Low | ✅ Fixed — name/email validation |
+| Auto-confirm bypass | Medium | ✅ Fixed — removed |
+| No rate limiting | Low | ✅ Fixed — 10 req/min |
 
 ## Feature Gaps
 

@@ -61,7 +61,12 @@
 - [x] Phase 4: Public booking + Payfast integration
 - [x] Phase 5: E-Waiver system with canvas signature
 - [x] Phase 6: Role-based auth + dashboards
-- [x] Phase 7: Docker deployment + auto-seed
+- [x] Phase 7: Docker deployment + auto-seed + nginx
+- [x] Phase 8: Mobile responsive + PWA
+- [x] Phase 9: Deposit vs full payment options
+- [x] Phase 10: Auto slot generation + daily cron
+- [x] Phase 11: Security hardening (server-side Payfast, rate limiting, input validation)
+- [x] Phase 12: Rooms CRUD (add/edit/delete/toggle active)
 - [x] Phase 8: Mobile responsive + PWA
 - [x] Phase 9: Deposit vs full payment options
 - [x] Phase 10: Auto slot generation + daily cron
