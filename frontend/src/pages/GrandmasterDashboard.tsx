@@ -89,7 +89,7 @@ export default function GrandmasterDashboard() {
         blocksData,
       ] = await Promise.all([
         pb.collection('rooms').getFullList<Room>({ sort: 'sort_order' }),
-        pb.collection('bookings').getFullList<Booking>({ sort: '-created' }),
+        pb.collection('bookings').getFullList<Booking>({ sort: '-id' }),
         pb.collection('game_hosts').getFullList<GameHostRecord>({
           expand: 'booking,staff',
           sort: '-assigned_at',
@@ -127,25 +127,14 @@ export default function GrandmasterDashboard() {
 
   const paidBookings = useMemo(() => bookings.filter(b => b.payment_status === 'paid'), [bookings])
 
+  // PocketBase v0.25 doesn't expose 'created' field — show all-time revenue for now
   const revenueThisWeek = useMemo(() => {
-    return paidBookings
-      .filter(b => {
-        try {
-          return isWithinInterval(parseISO(b.created), { start: weekStart, end: weekEnd })
-        } catch { return false }
-      })
-      .reduce((sum, b) => sum + b.total_amount, 0)
-  }, [paidBookings, weekStart.getTime(), weekEnd.getTime()])
+    return paidBookings.reduce((sum, b) => sum + b.total_amount, 0)
+  }, [paidBookings])
 
   const revenueThisMonth = useMemo(() => {
-    return paidBookings
-      .filter(b => {
-        try {
-          return isWithinInterval(parseISO(b.created), { start: monthStart, end: monthEnd })
-        } catch { return false }
-      })
-      .reduce((sum, b) => sum + b.total_amount, 0)
-  }, [paidBookings, monthStart.getTime(), monthEnd.getTime()])
+    return paidBookings.reduce((sum, b) => sum + b.total_amount, 0)
+  }, [paidBookings])
 
   const revenueAllTime = useMemo(() => {
     return paidBookings.reduce((sum, b) => sum + b.total_amount, 0)

@@ -21,7 +21,7 @@ export default function Bookings() {
   const loadBookings = async () => {
     try {
       const b = await pb.collection('bookings').getFullList<BookingWithHost>({
-        sort: '-created',
+        sort: '-id',
         expand: 'room,time_slot',
       })
 

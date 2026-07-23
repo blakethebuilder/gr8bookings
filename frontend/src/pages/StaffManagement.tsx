@@ -13,7 +13,7 @@ export default function StaffManagement() {
 
   const loadStaff = async () => {
     try {
-      const list = await pb.collection('staff').getFullList<Staff>({ sort: '-created' })
+      const list = await pb.collection('staff').getFullList<Staff>({ sort: '-id' })
       setStaffList(list)
     } catch (e) {
       console.error('Failed to load staff:', e)

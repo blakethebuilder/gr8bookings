@@ -12,7 +12,7 @@ export default function Dashboard() {
       try {
         const r = await pb.collection('rooms').getFullList<Room>({ sort: 'sort_order' })
         setRooms(r)
-        const b = await pb.collection('bookings').getFullList<Booking>({ sort: '-created', limit: 10 })
+        const b = await pb.collection('bookings').getFullList<Booking>({ sort: '-id', limit: 10 })
         setBookings(b)
       } catch (e) {
         console.error('Failed to load:', e)
@@ -23,10 +23,8 @@ export default function Dashboard() {
     load()
   }, [])
 
-  const todayBookings = bookings.filter(b => {
-    const today = new Date().toISOString().split('T')[0]
-    return b.created.startsWith(today)
-  })
+  // PocketBase v0.25 doesn't expose 'created' field — show all bookings for now
+  const todayBookings = bookings
 
   const stats = [
     { label: 'Rooms', value: rooms.length, icon: Calendar, color: 'text-gr8-red' },
