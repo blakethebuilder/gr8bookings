@@ -7,7 +7,7 @@ COPY frontend/ .
 RUN npm run build
 
 # --- Final image ---
-FROM pocketbase/pocketbase:0.25.8
+FROM ghcr.io/pocketbase/pocketbase:0.25.8
 
 # Copy frontend build to PocketBase public dir
 COPY --from=frontend-build /app/frontend/dist /pb/public
