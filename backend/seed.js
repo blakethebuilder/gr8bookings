@@ -228,10 +228,22 @@ async function createCollections() {
         ids[col.name] = result.id
         console.log(`✓ Collection: ${col.name} (${result.id})`)
       } else {
-        // Already exists, get its ID
+        // Already exists, get its ID and update rules
         const existing = await api('GET', `/api/collections/${col.name}`)
         ids[col.name] = existing.id
-        console.log(`  Collection: ${col.name} (existing ${existing.id})`)
+        // Update rules if they're null
+        if (existing.listRule === null || existing.viewRule === null) {
+          await api('PATCH', `/api/collections/${existing.id}`, {
+            listRule: col.listRule,
+            viewRule: col.viewRule,
+            createRule: col.createRule,
+            updateRule: col.updateRule,
+            deleteRule: col.deleteRule,
+          })
+          console.log(`  Collection: ${col.name} (rules updated)`)
+        } else {
+          console.log(`  Collection: ${col.name} (existing ${existing.id})`)
+        }
       }
     } catch (e) {
       // Try to get existing
