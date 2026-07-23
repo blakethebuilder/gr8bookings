@@ -28,7 +28,7 @@ RUN unzip /tmp/pb.zip -d /pb/ && rm /tmp/pb.zip && chmod +x /pb/pocketbase
 COPY --from=frontend-build /app/frontend/dist /usr/share/nginx/html
 
 # Copy nginx config
-COPY nginx.conf /etc/nginx/http.d/default.conf
+COPY frontend/nginx.conf /etc/nginx/http.d/default.conf
 
 # Copy migrations + seed
 COPY backend/pb_migrations /pb/pb_migrations
