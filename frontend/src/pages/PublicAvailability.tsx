@@ -79,7 +79,7 @@ export default function PublicAvailability() {
           <h1 className="text-4xl font-black text-white mb-2">
             Check <span className="text-gr8-red">Availability</span>
           </h1>
-          <p className="text-gray-400">See what's free before you book. We're open Thu–Sun, 11:00–18:00.</p>
+          <p className="text-gray-400">See what's free before you book. Open 7 days — Mon–Thu 9:30–18:30, Fri–Sat 9:30–20:00, Sun 9:30–18:30.</p>
         </div>
 
         {/* Week navigation */}
@@ -105,8 +105,7 @@ export default function PublicAvailability() {
         {/* Day selector */}
         <div className="flex gap-2 mb-8 overflow-x-auto pb-2 justify-center">
           {weekDays.map(day => {
-            const dayNum = getDay(day)
-            const isBusinessDay = dayNum === 0 || dayNum === 4 || dayNum === 5 || dayNum === 6
+            const isBusinessDay = true // Open 7 days
             const isSelected = isSameDay(day, selectedDate)
             const slotsForDay = slots.filter(s => isSameDay(new Date(s.date.split(' ')[0]), day))
 

@@ -15,6 +15,7 @@ interface FormData {
   playerEmail: string
   playerPhone: string
   playerCount: number
+  paymentType: 'deposit' | 'full'
 }
 
 const steps = [
@@ -41,6 +42,7 @@ export default function Book() {
     playerEmail: '',
     playerPhone: '',
     playerCount: 2,
+    paymentType: 'deposit',
   })
 
   // Read URL params from availability page
@@ -116,12 +118,17 @@ export default function Book() {
     setStep('details')
   }
 
+  // Calculate amounts based on payment type
+  const fullAmount = formData.room ? formData.playerCount * formData.room.price_per_player : 0
+  const depositAmount = 640 // R640 covers 2 tickets at R320 each
+  const amountToPay = formData.paymentType === 'deposit' ? Math.min(depositAmount, fullAmount) : fullAmount
+  const balanceDue = fullAmount - amountToPay
+
   const handleBooking = async () => {
     if (!formData.room || !formData.slot || !formData.playerName || !formData.playerEmail) return
     setSubmitting(true)
 
     try {
-      const totalAmount = formData.playerCount * formData.room.price_per_player
       const reference = `GR8-${Date.now().toString(36).toUpperCase()}`
 
       // Check if Payfast is configured
@@ -140,7 +147,10 @@ export default function Book() {
         customer_phone: formData.playerPhone,
         player_count: formData.playerCount,
         price_per_player: formData.room.price_per_player,
-        total_amount: totalAmount,
+        total_amount: fullAmount,
+        deposit_amount: amountToPay,
+        balance_due: balanceDue,
+        payment_type: formData.paymentType,
         currency: formData.room.currency,
         status: isDemo ? 'confirmed' : 'pending',
         payment_status: isDemo ? 'paid' : 'unpaid',
@@ -172,7 +182,7 @@ export default function Book() {
           ['name_last', formData.playerName.split(' ').slice(1).join(' ') || ''],
           ['email_address', formData.playerEmail],
           ['m_payment_id', reference],
-          ['amount', totalAmount.toFixed(2)],
+          ['amount', amountToPay.toFixed(2)],
           ['item_name', `Escape Room - ${formData.room.name}`],
           ['item_description', `Booking ${reference} - ${formData.playerCount} players`],
           ['custom_str1', booking.id],
@@ -493,9 +503,10 @@ export default function Book() {
               ← Back to details
             </button>
             <h1 className="text-3xl font-black text-white mb-2">Confirm & Pay</h1>
-            <p className="text-gray-500 mb-8">Review your booking and complete payment.</p>
+            <p className="text-gray-500 mb-8">Review your booking and choose payment option.</p>
 
             <div className="max-w-lg">
+              {/* Booking summary */}
               <div className="bg-[#1e1e1e] border border-gray-700/50 rounded-xl p-6 mb-6">
                 <div className="flex items-center gap-3 mb-4">
                   <div className="w-5 h-5 rounded-full" style={{ backgroundColor: formData.room.color }} />
@@ -512,7 +523,7 @@ export default function Book() {
                   </div>
                   <div className="flex justify-between text-gray-400">
                     <span>Players</span>
-                    <span className="text-white">{formData.playerCount}</span>
+                    <span className="text-white">{formData.playerCount} × R{formData.room.price_per_player}</span>
                   </div>
                   <div className="flex justify-between text-gray-400">
                     <span>Name</span>
@@ -523,9 +534,56 @@ export default function Book() {
                     <span className="text-white">{formData.playerEmail}</span>
                   </div>
                 </div>
-                <div className="mt-4 pt-4 border-t border-gray-700/50 flex justify-between text-lg font-bold">
-                  <span className="text-white">Total</span>
-                  <span className="text-gr8-gold">R{formData.playerCount * formData.room.price_per_player}</span>
+              </div>
+
+              {/* Payment option selector */}
+              <div className="mb-6">
+                <label className="text-sm text-gray-400 mb-2 block font-medium">Payment Option</label>
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    onClick={() => setFormData(prev => ({ ...prev, paymentType: 'deposit' }))}
+                    className={`p-4 rounded-xl border text-left transition-all ${
+                      formData.paymentType === 'deposit'
+                        ? 'border-gr8-red bg-gr8-red/10'
+                        : 'border-gray-700/50 bg-white/5 hover:border-gray-600'
+                    }`}
+                  >
+                    <p className="text-white font-bold mb-1">Deposit</p>
+                    <p className="text-2xl font-black text-gr8-gold">R640</p>
+                    <p className="text-xs text-gray-500 mt-1">Covers 2 tickets. Pay rest on arrival.</p>
+                  </button>
+                  <button
+                    onClick={() => setFormData(prev => ({ ...prev, paymentType: 'full' }))}
+                    className={`p-4 rounded-xl border text-left transition-all ${
+                      formData.paymentType === 'full'
+                        ? 'border-gr8-red bg-gr8-red/10'
+                        : 'border-gray-700/50 bg-white/5 hover:border-gray-600'
+                    }`}
+                  >
+                    <p className="text-white font-bold mb-1">Pay Full</p>
+                    <p className="text-2xl font-black text-gr8-gold">R{fullAmount}</p>
+                    <p className="text-xs text-gray-500 mt-1">Pay for all {formData.playerCount} players now.</p>
+                  </button>
+                </div>
+              </div>
+
+              {/* Price breakdown */}
+              <div className="bg-[#1e1e1e] border border-gray-700/50 rounded-xl p-4 mb-6">
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between text-gray-400">
+                    <span>Full amount ({formData.playerCount} × R{formData.room.price_per_player})</span>
+                    <span className="text-white">R{fullAmount}</span>
+                  </div>
+                  <div className="flex justify-between text-gr8-gold font-bold">
+                    <span>Pay now</span>
+                    <span>R{amountToPay}</span>
+                  </div>
+                  {balanceDue > 0 && (
+                    <div className="flex justify-between text-gray-500">
+                      <span>Balance due at venue</span>
+                      <span>R{balanceDue}</span>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -548,7 +606,7 @@ export default function Book() {
                 {submitting ? (
                   <><Loader2 size={20} className="animate-spin" /> Processing...</>
                 ) : payfastConfigured ? (
-                  <><CreditCard size={20} /> Pay R{formData.playerCount * formData.room.price_per_player} via Payfast</>
+                  <><CreditCard size={20} /> Pay R{amountToPay} via Payfast</>
                 ) : (
                   <><CheckCircle size={20} /> Confirm Booking (Demo)</>
                 )}

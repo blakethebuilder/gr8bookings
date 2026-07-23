@@ -301,7 +301,7 @@ async function seedStaff() {
 async function seedSettings() {
   const settings = [
     { key: 'business_name', value: 'The Gr8 Escape', description: 'Business name' },
-    { key: 'business_hours', value: 'Thu-Sun 11:00-18:00', description: 'Operating hours' },
+    { key: 'business_hours', value: 'Mon-Thu 09:30-18:30, Fri-Sat 09:30-20:00, Sun 09:30-18:30', description: 'Operating hours' },
     { key: 'default_currency', value: 'ZAR', description: 'Default currency' },
     { key: 'default_reset_buffer', value: '15', description: 'Reset buffer minutes' },
     { key: 'game_duration', value: '60', description: 'Default game duration' },
@@ -348,7 +348,7 @@ async function generateTimeSlots() {
       const buffer = room.reset_buffer_minutes
       const totalBlock = duration + buffer
 
-      let hour = 11, minute = 0
+      let hour = 9, minute = 30
 
       while (true) {
         const endMin = hour * 60 + minute + duration

@@ -51,6 +51,9 @@ export interface Booking {
   player_count: number
   price_per_player: number
   total_amount: number
+  deposit_amount: number
+  balance_due: number
+  payment_type: 'deposit' | 'full'
   currency: string
   status: 'pending' | 'confirmed' | 'cancelled' | 'completed'
   payment_status: 'unpaid' | 'paid' | 'refunded' | 'failed'

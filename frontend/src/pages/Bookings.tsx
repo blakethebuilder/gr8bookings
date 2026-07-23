@@ -114,6 +114,7 @@ export default function Bookings() {
                   <th className="text-left py-3 px-4 text-gray-500 font-medium">Total</th>
                   <th className="text-left py-3 px-4 text-gray-500 font-medium">Status</th>
                   <th className="text-left py-3 px-4 text-gray-500 font-medium">GM</th>
+                  <th className="text-left py-3 px-4 text-gray-500 font-medium">Payment</th>
                   <th className="text-left py-3 px-4 text-gray-500 font-medium">Waiver</th>
                 </tr>
               </thead>
@@ -170,6 +171,18 @@ export default function Bookings() {
                         ) : (
                           <span className="text-xs text-gray-600">—</span>
                         )}
+                      </td>
+                      <td className="py-3 px-4">
+                        <div className="text-xs">
+                          <span className={`px-2 py-0.5 rounded font-bold ${
+                            b.payment_type === 'full' ? 'bg-green-500/20 text-green-400' : 'bg-yellow-500/20 text-yellow-400'
+                          }`}>
+                            {b.payment_type === 'full' ? 'Full' : 'Deposit'}
+                          </span>
+                          {b.balance_due > 0 && (
+                            <p className="text-gray-500 mt-1">R{b.balance_due} due</p>
+                          )}
+                        </div>
                       </td>
                       <td className="py-3 px-4">
                         {b.waiver_signed ? (

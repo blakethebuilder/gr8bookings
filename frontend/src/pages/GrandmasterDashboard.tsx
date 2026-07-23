@@ -307,6 +307,39 @@ export default function GrandmasterDashboard() {
         </div>
       </div>
 
+      {/* Deposit vs Full Payment Summary */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        <div className="card-dark">
+          <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">Deposits Collected</p>
+          <p className="text-2xl font-bold text-gr8-gold">
+            R{bookings.filter(b => b.payment_type === 'deposit' && b.payment_status === 'paid')
+              .reduce((sum, b) => sum + (b.deposit_amount || 640), 0).toLocaleString()}
+          </p>
+          <p className="text-xs text-gray-600">{bookings.filter(b => b.payment_type === 'deposit').length} bookings</p>
+        </div>
+        <div className="card-dark">
+          <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">Balance Due at Venue</p>
+          <p className="text-2xl font-bold text-yellow-400">
+            R{bookings.filter(b => b.payment_type === 'deposit' && b.status !== 'cancelled')
+              .reduce((sum, b) => sum + (b.balance_due || 0), 0).toLocaleString()}
+          </p>
+          <p className="text-xs text-gray-600">To collect on arrival</p>
+        </div>
+        <div className="card-dark">
+          <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">Full Payments</p>
+          <p className="text-2xl font-bold text-green-400">
+            R{bookings.filter(b => b.payment_type === 'full' && b.payment_status === 'paid')
+              .reduce((sum, b) => sum + b.total_amount, 0).toLocaleString()}
+          </p>
+          <p className="text-xs text-gray-600">{bookings.filter(b => b.payment_type === 'full').length} bookings</p>
+        </div>
+        <div className="card-dark">
+          <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">Total Revenue</p>
+          <p className="text-2xl font-bold text-white">R{revenueAllTime.toLocaleString()}</p>
+          <p className="text-xs text-gray-600">All confirmed bookings</p>
+        </div>
+      </div>
+
       {/* Bookings Overview */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
         <div className="card-dark text-center">
