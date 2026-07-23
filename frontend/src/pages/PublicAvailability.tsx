@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
-import { Calendar, Clock, Users, Loader2, ChevronLeft, ChevronRight } from 'lucide-react'
-import { format, addDays, startOfWeek, isSameDay, getDay } from 'date-fns'
+import { Calendar, Loader2, ChevronLeft, ChevronRight } from 'lucide-react'
+import { format, addDays, isSameDay } from 'date-fns'
 import pb, { type Room, type TimeSlot } from '../lib/pocketbase'
 
 export default function PublicAvailability() {
