@@ -208,7 +208,7 @@ export default function GameMaster() {
       </div>
 
       {/* FullCalendar */}
-      <div className="card-dark p-4 overflow-hidden">
+      <div className="card-dark p-4 calendar-wrapper">
         <FullCalendar
           plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
           initialView="timeGridWeek"
@@ -219,23 +219,18 @@ export default function GameMaster() {
           }}
           slotMinTime="10:00:00"
           slotMaxTime="19:00:00"
-          slotDuration="00:15:00"
+          slotDuration="00:30:00"
           allDaySlot={false}
           weekends={true}
           selectable={true}
           selectMirror={true}
-          dayMaxEvents={true}
+          dayMaxEvents={3}
           events={events}
           select={handleDateSelect}
           eventClick={handleEventClick}
-          height="auto"
+          height="calc(100vh - 280px)"
           eventDisplay="block"
           nowIndicator={true}
-          businessHours={{
-            daysOfWeek: [4, 5, 6, 0],
-            startTime: '11:00',
-            endTime: '18:00',
-          }}
         />
       </div>
 
@@ -344,3 +339,87 @@ export default function GameMaster() {
     </div>
   )
 }
+
+<style>{`
+  /* FullCalendar dark theme */
+  .calendar-wrapper .fc {
+    --fc-bg-event: rgba(255,255,255,0.03);
+    --fc-border-color: #333;
+    --fc-button-bg-color: #1e1e1e;
+    --fc-button-border-color: #333;
+    --fc-button-hover-bg-color: #333;
+    --fc-button-hover-border-color: #555;
+    --fc-button-active-bg-color: #E53935;
+    --fc-button-active-border-color: #E53935;
+    --fc-today-bg-color: rgba(229,57,53,0.05);
+    --fc-page-bg-color: transparent;
+    --fc-neutral-bg-color: #1a1a1a;
+    --fc-list-event-hover-bg-color: #222;
+  }
+  .calendar-wrapper .fc .fc-toolbar-title {
+    color: white;
+    font-size: 1.1rem;
+    font-weight: 700;
+  }
+  .calendar-wrapper .fc .fc-button {
+    color: #ccc;
+    font-size: 0.8rem;
+    font-weight: 600;
+    padding: 6px 12px;
+    border-radius: 6px;
+  }
+  .calendar-wrapper .fc .fc-button-active {
+    color: white !important;
+  }
+  .calendar-wrapper .fc .fc-timegrid-slot-label {
+    color: #888;
+    font-size: 0.75rem;
+  }
+  .calendar-wrapper .fc .fc-col-header-cell {
+    background: #1a1a1a;
+    color: #ccc;
+    font-weight: 600;
+    font-size: 0.8rem;
+    padding: 8px 0;
+  }
+  .calendar-wrapper .fc .fc-col-header-cell-cushion {
+    color: #ccc;
+  }
+  .calendar-wrapper .fc .fc-timegrid-slot {
+    height: 2rem;
+  }
+  .calendar-wrapper .fc .fc-timegrid-slot-minor {
+    border-color: #222;
+  }
+  .calendar-wrapper .fc .fc-timegrid-divider {
+    border-color: #333;
+  }
+  .calendar-wrapper .fc .fc-timegrid-now-indicator-line {
+    border-color: #E53935;
+  }
+  .calendar-wrapper .fc .fc-timegrid-now-indicator-arrow {
+    border-color: #E53935;
+  }
+  .calendar-wrapper .fc .fc-event {
+    border-radius: 4px;
+    font-size: 0.75rem;
+    padding: 2px 6px;
+    border: none;
+    font-weight: 500;
+  }
+  .calendar-wrapper .fc .fc-daygrid-day {
+    background: transparent;
+  }
+  .calendar-wrapper .fc .fc-scrollgrid {
+    border-color: #333;
+  }
+  .calendar-wrapper .fc th {
+    border-color: #333;
+  }
+  .calendar-wrapper .fc td {
+    border-color: #222;
+  }
+  .calendar-wrapper .fc .fc-timegrid-body {
+    min-height: 400px;
+  }
+`}</style>
