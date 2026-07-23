@@ -1,7 +1,8 @@
+import { useState } from 'react'
 import { Outlet, NavLink, useNavigate } from 'react-router-dom'
 import {
   LayoutDashboard, CalendarDays, Calendar, BookOpen, Settings, LogOut,
-  Users, Crown
+  Users, Crown, Menu, X
 } from 'lucide-react'
 import { useAuth } from '../lib/auth'
 
@@ -23,6 +24,7 @@ const grandmasterNavItems = [
 export default function Layout() {
   const { staff, isGrandmaster, logout } = useAuth()
   const navigate = useNavigate()
+  const [sidebarOpen, setSidebarOpen] = useState(false)
 
   const navItems = isGrandmaster ? grandmasterNavItems : gmNavItems
 
@@ -31,18 +33,34 @@ export default function Layout() {
     navigate('/login')
   }
 
+  const handleNav = () => setSidebarOpen(false)
+
   return (
     <div className="flex h-screen bg-gr8-dark">
+      {/* Mobile overlay */}
+      {sidebarOpen && (
+        <div className="fixed inset-0 bg-black/50 z-40 lg:hidden" onClick={() => setSidebarOpen(false)} />
+      )}
+
       {/* Sidebar */}
-      <aside className="w-64 bg-gr8-card border-r border-gray-800 flex flex-col">
+      <aside className={`
+        fixed lg:static inset-y-0 left-0 z-50 w-64 bg-gr8-card border-r border-gray-800 flex flex-col
+        transform transition-transform duration-200 ease-in-out
+        ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+      `}>
         {/* Header */}
-        <div className="p-6 border-b border-gray-800">
-          <h1 className="text-xl font-black text-white tracking-tight">
-            THE GR8 <span className="text-gr8-red">ESCAPE</span>
-          </h1>
-          <p className="text-xs text-gray-500 mt-1">
-            {isGrandmaster ? 'Grandmaster Portal' : 'Game Master HQ'}
-          </p>
+        <div className="p-6 border-b border-gray-800 flex items-center justify-between">
+          <div>
+            <h1 className="text-xl font-black text-white tracking-tight">
+              THE GR8 <span className="text-gr8-red">ESCAPE</span>
+            </h1>
+            <p className="text-xs text-gray-500 mt-1">
+              {isGrandmaster ? 'Grandmaster Portal' : 'Game Master HQ'}
+            </p>
+          </div>
+          <button onClick={() => setSidebarOpen(false)} className="lg:hidden text-gray-500 hover:text-white">
+            <X size={20} />
+          </button>
         </div>
 
         {/* User info */}
@@ -65,11 +83,12 @@ export default function Layout() {
         )}
 
         {/* Navigation */}
-        <nav className="flex-1 p-4 space-y-1">
+        <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
           {navItems.map(({ to, icon: Icon, label }) => (
             <NavLink
               key={to}
               to={to}
+              onClick={handleNav}
               className={({ isActive }) =>
                 `flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
                   isActive
@@ -97,11 +116,22 @@ export default function Layout() {
       </aside>
 
       {/* Main content */}
-      <main className="flex-1 overflow-auto">
-        <div className="p-8">
+      <div className="flex-1 flex flex-col min-w-0">
+        {/* Mobile header */}
+        <header className="lg:hidden flex items-center gap-3 p-4 border-b border-gray-800 bg-gr8-card">
+          <button onClick={() => setSidebarOpen(true)} className="text-gray-400 hover:text-white">
+            <Menu size={24} />
+          </button>
+          <h1 className="text-lg font-black text-white tracking-tight">
+            THE GR8 <span className="text-gr8-red">ESCAPE</span>
+          </h1>
+        </header>
+
+        {/* Page content */}
+        <main className="flex-1 overflow-auto p-4 sm:p-6 lg:p-8">
           <Outlet />
-        </div>
-      </main>
+        </main>
+      </div>
     </div>
   )
 }

@@ -82,7 +82,7 @@ export default function GMDashboard() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-3 gap-4 mb-8">
+      <div className="grid grid-cols-3 gap-2 sm:gap-4 mb-8">
         <div className="card-dark text-center">
           <p className="text-3xl font-black text-gr8-red">{activeGames.length}</p>
           <p className="text-xs text-gray-500 uppercase tracking-wider mt-1">Active Games</p>
