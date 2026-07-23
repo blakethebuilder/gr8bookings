@@ -7,6 +7,7 @@ import { useAuth } from '../lib/auth'
 
 const gmNavItems = [
   { to: '/gm', icon: CalendarDays, label: 'My Games' },
+  { to: '/calendar', icon: CalendarDays, label: 'Calendar' },
 ]
 
 const grandmasterNavItems = [
