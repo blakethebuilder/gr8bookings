@@ -7,6 +7,7 @@ import Bookings from './pages/Bookings'
 import Settings from './pages/Settings'
 import Book from './pages/Book'
 import BookConfirm from './pages/BookConfirm'
+import Waiver from './pages/Waiver'
 
 function App() {
   return (
@@ -14,6 +15,7 @@ function App() {
       {/* Public booking flow (standalone layout) */}
       <Route path="/book" element={<Book />} />
       <Route path="/book/confirm/:reference" element={<BookConfirm />} />
+      <Route path="/waiver/:id" element={<Waiver />} />
 
       {/* Game Master admin (sidebar layout) */}
       <Route element={<Layout />}>

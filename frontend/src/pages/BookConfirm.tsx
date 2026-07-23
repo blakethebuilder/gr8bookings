@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
-import { CheckCircle, Calendar, Clock, Users, Home, AlertCircle, Loader2 } from 'lucide-react'
+import { CheckCircle, Calendar, Clock, Users, Home, AlertCircle, Loader2, Share2, Copy, Check, Shield } from 'lucide-react'
 import { format } from 'date-fns'
 import pb, { type Booking, type Room, type TimeSlot } from '../lib/pocketbase'
 
@@ -11,6 +11,7 @@ export default function BookConfirm() {
   const [timeSlot, setTimeSlot] = useState<TimeSlot | null>(null)
   const [loading, setLoading] = useState(true)
   const [confirming, setConfirming] = useState(false)
+  const [copied, setCopied] = useState(false)
 
   useEffect(() => {
     if (!reference) return
@@ -139,6 +140,37 @@ export default function BookConfirm() {
             <p className="text-gray-400">Your booking has been saved. We'll confirm once payment is received.</p>
           </div>
         )}
+
+        {/* Share Waiver Link */}
+        <div className="bg-[#1e1e1e] border border-gr8-red/30 rounded-xl p-6 mb-8 text-left">
+          <div className="flex items-center gap-3 mb-3">
+            <Shield size={20} className="text-gr8-red" />
+            <h3 className="text-lg font-bold text-white">Player Waiver</h3>
+          </div>
+          <p className="text-sm text-gray-400 mb-4">
+            All players must sign an indemnity waiver before the game. Share this link with your group:
+          </p>
+          <div className="flex items-center gap-2 bg-white/5 border border-gray-700 rounded-lg p-3">
+            <input
+              readOnly
+              value={`${window.location.origin}/waiver/${booking.reference}`}
+              className="flex-1 bg-transparent text-sm text-gray-300 font-mono outline-none"
+            />
+            <button
+              onClick={() => {
+                navigator.clipboard.writeText(`${window.location.origin}/waiver/${booking.reference}`)
+                setCopied(true)
+                setTimeout(() => setCopied(false), 2000)
+              }}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-gr8-red/20 text-gr8-red text-sm font-medium hover:bg-gr8-red/30 transition-colors"
+            >
+              {copied ? <><Check size={14} /> Copied</> : <><Copy size={14} /> Copy</>}
+            </button>
+          </div>
+          <p className="text-xs text-gray-600 mt-2">
+            Each player should open this link and sign before arriving. Waivers are also available at reception.
+          </p>
+        </div>
 
         <div className="bg-white/5 border border-gray-700/50 rounded-xl p-4 mb-8 text-sm text-gray-400 text-left">
           <p className="mb-2">A confirmation email will be sent to <strong className="text-white">{booking.customer_email}</strong></p>
