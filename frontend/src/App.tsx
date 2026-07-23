@@ -1,4 +1,4 @@
-import { Routes, Route } from 'react-router-dom'
+import { Routes, Route, Navigate } from 'react-router-dom'
 import Layout from './components/Layout'
 import AuthGate from './components/AuthGate'
 import Login from './pages/Login'
@@ -15,6 +15,9 @@ import Waiver from './pages/Waiver'
 function App() {
   return (
     <Routes>
+      {/* Root redirects to login */}
+      <Route path="/" element={<Navigate to="/login" replace />} />
+
       {/* Public routes */}
       <Route path="/login" element={<Login />} />
       <Route path="/book" element={<Book />} />
@@ -38,6 +41,9 @@ function App() {
           <Route path="/settings" element={<Settings />} />
         </Route>
       </Route>
+
+      {/* Catch all */}
+      <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>
   )
 }
