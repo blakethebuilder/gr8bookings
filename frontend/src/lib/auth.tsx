@@ -52,7 +52,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const login = async (email: string, pin: string): Promise<boolean> => {
     try {
-      // Find staff by email
       const result = await pb.collection('staff').getFirstListItem<Staff>(
         `email = "${email}" && is_active = true`
       )

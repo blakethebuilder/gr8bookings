@@ -3,9 +3,6 @@ import PocketBase from 'pocketbase'
 const pb = new PocketBase('/')
 pb.autoCancellation(false)
 
-// Clear any stale auth from admin panel visits
-pb.authStore.clear()
-
 export default pb
 
 export interface Room {
