@@ -149,12 +149,11 @@ export default function Book() {
           ['custom_str2', reference],
         ]
 
-        // Generate signature: sort params alphabetically by key, encode, append passphrase, MD5
+        // Generate signature: sort non-empty params, encode, ALWAYS append passphrase, MD5
         const sorted = paramPairs.filter(([, v]) => v !== '').sort((a, b) => a[0].localeCompare(b[0]))
         let signatureString = sorted.map(([k, v]) => `${k}=${encodeURIComponent(v).replace(/%20/g, '+')}`).join('&')
-        if (passphrase) {
-          signatureString += `&passphrase=${encodeURIComponent(passphrase).replace(/%20/g, '+')}`
-        }
+        // Payfast always expects &passphrase= (even if empty)
+        signatureString += `&passphrase=${encodeURIComponent(passphrase || '').replace(/%20/g, '+')}`
 
         // Build hidden form
         const form = document.createElement('form')
