@@ -1,0 +1,9 @@
+node_modules
+frontend/node_modules
+backend/webhook/node_modules
+frontend/dist
+pb_data
+.git
+.env
+*.md
+gr8escape-demo
