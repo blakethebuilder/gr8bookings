@@ -1,5 +1,8 @@
 # Escape Room Booking System - Project Status
 
+## Repository
+- **GitHub:** https://github.com/blakethebuilder/gr8bookings.git
+
 ## Architecture & Stack
 - **Backend:** PocketBase v0.25.8 (SQLite + REST/Realtime SSE + Auth)
 - **Frontend:** React 18 + Vite 6 + Tailwind CSS 3 + Lucide Icons + FullCalendar + TanStack Table
