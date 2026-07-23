@@ -335,7 +335,7 @@ async function generateTimeSlots() {
   const now = new Date()
   const slotsCreated = { total: 0 }
 
-  for (let dayOffset = 1; dayOffset <= 14; dayOffset++) {
+  for (let dayOffset = 1; dayOffset <= 30; dayOffset++) {
     const date = new Date(now)
     date.setDate(date.getDate() + dayOffset)
     const dow = date.getDay()

@@ -10,7 +10,7 @@ for i in $(seq 1 30); do
   sleep 1
 done
 
-# Create superuser via CLI (must be done before API auth works)
+# Create superuser via CLI
 echo "👤 Creating superuser..."
 cd /pb
 ./pocketbase superuser upsert "${PB_ADMIN_EMAIL:-grandmaster@gr8escape.co.za}" "${PB_ADMIN_PASSWORD:-gr8@2026!}" 2>/dev/null || echo "  (superuser may already exist)"
@@ -24,3 +24,15 @@ if [ "$ROOMS_COUNT" = "0" ] || [ -z "$ROOMS_COUNT" ]; then
 else
   echo "✓ Already seeded (${ROOMS_COUNT} rooms)"
 fi
+
+# Auto-generate slots if fewer than 14 days ahead exist
+echo "🔄 Checking slot availability..."
+cd /app/backend && node auto-slots.js http://localhost:8090
+
+# Start daily cron job for slot auto-generation
+echo "⏰ Starting daily slot cron (every 24h)..."
+while true; do
+  sleep 86400
+  echo "🔄 Daily slot check..."
+  cd /app/backend && node auto-slots.js http://localhost:8090 2>/dev/null
+done &
