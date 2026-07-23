@@ -65,25 +65,32 @@ export default function Book() {
       setLoading(false)
 
       // Auto-select from URL params
-      if (paramRoom && paramDate && paramTime) {
+      if (paramRoom) {
         const matchedRoom = roomsData.find(r => r.slug === paramRoom)
         if (matchedRoom) {
-          const dateObj = parseISO(paramDate)
-          setFormData(prev => ({ ...prev, room: matchedRoom, date: dateObj }))
-          setStep('slot') // Jump to slot selection
+          setFormData(prev => ({ ...prev, room: matchedRoom }))
 
-          // Load slots and auto-select the matching one
-          pb.collection('time_slots').getFullList<TimeSlot>({
-            filter: `room = "${matchedRoom.id}" && date~"${paramDate}" && status = "available"`,
-            sort: 'start_time',
-          }).then(slotsData => {
-            setSlots(slotsData)
-            const matchedSlot = slotsData.find(s => s.start_time === paramTime)
-            if (matchedSlot) {
-              setFormData(prev => ({ ...prev, slot: matchedSlot }))
-              setStep('details') // Jump straight to details form
-            }
-          })
+          if (paramDate && paramTime) {
+            // Full auto-select: room + date + time → jump to details
+            const dateObj = parseISO(paramDate)
+            setFormData(prev => ({ ...prev, room: matchedRoom, date: dateObj }))
+            setStep('slot')
+
+            pb.collection('time_slots').getFullList<TimeSlot>({
+              filter: `room = "${matchedRoom.id}" && date~"${paramDate}" && status = "available"`,
+              sort: 'start_time',
+            }).then(slotsData => {
+              setSlots(slotsData)
+              const matchedSlot = slotsData.find(s => s.start_time === paramTime)
+              if (matchedSlot) {
+                setFormData(prev => ({ ...prev, slot: matchedSlot }))
+                setStep('details')
+              }
+            })
+          } else {
+            // Room only → skip to date selection
+            setStep('date')
+          }
         }
       }
     }).catch(err => {

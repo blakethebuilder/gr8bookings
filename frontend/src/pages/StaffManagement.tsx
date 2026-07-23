@@ -160,8 +160,8 @@ export default function StaffManagement() {
 
       {/* Add/Edit Modal */}
       {showModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => setShowModal(false)}>
-          <div className="card-dark w-full max-w-md" onClick={e => e.stopPropagation()}>
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="card-dark w-full max-w-md">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-lg font-bold text-white">
                 {editingStaff ? 'Edit Staff Member' : 'Add Staff Member'}
@@ -171,7 +171,7 @@ export default function StaffManagement() {
               </button>
             </div>
 
-            <form onSubmit={handleSave} className="space-y-4">
+            <form key={editingStaff?.id || 'new'} onSubmit={handleSave} className="space-y-4">
               <div>
                 <label className="text-sm text-gray-400 mb-1 block">Name</label>
                 <input
