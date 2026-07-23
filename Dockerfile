@@ -17,6 +17,7 @@ RUN apk add --no-cache \
     unzip \
     ca-certificates \
     nodejs \
+    npm \
     nginx \
     wget
 

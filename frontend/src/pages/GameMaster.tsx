@@ -7,7 +7,6 @@ import { format, addDays, startOfWeek, endOfWeek } from 'date-fns'
 import { RefreshCw, Zap, UserPlus, Ban } from 'lucide-react'
 import pb, { type Room, type Booking, type TimeSlot, type GmBlock } from '../lib/pocketbase'
 import { useRealtime } from '../hooks/useRealtime'
-import SlotGenerator from '../components/SlotGenerator'
 import BlockModal from '../components/BlockModal'
 import QuickBook from '../components/QuickBook'
 
@@ -36,7 +35,6 @@ export default function GameMaster() {
   const [rooms, setRooms] = useState<Room[]>([])
   const [events, setEvents] = useState<CalendarEvent[]>([])
   const [loading, setLoading] = useState(true)
-  const [showSlotGen, setShowSlotGen] = useState(false)
   const [showBlockModal, setShowBlockModal] = useState(false)
   const [showQuickBook, setShowQuickBook] = useState(false)
   const [selectedSlot, setSelectedSlot] = useState<{ start: Date; end: Date; room?: string } | null>(null)
@@ -191,12 +189,6 @@ export default function GameMaster() {
             </span>
           </div>
           <button
-            onClick={() => setShowSlotGen(true)}
-            className="px-4 py-2 rounded-lg bg-gr8-red text-white text-sm font-bold hover:bg-gr8-red/80 transition-colors"
-          >
-            Generate Slots
-          </button>
-          <button
             onClick={() => loadCalendarData()}
             className="p-2 rounded-lg bg-white/5 text-gray-400 hover:text-white hover:bg-white/10 transition-colors"
           >
@@ -247,17 +239,6 @@ export default function GameMaster() {
       </div>
 
       {/* Modals */}
-      {showSlotGen && (
-        <SlotGenerator
-          rooms={rooms}
-          onClose={() => setShowSlotGen(false)}
-          onComplete={() => {
-            setShowSlotGen(false)
-            loadCalendarData()
-          }}
-        />
-      )}
-
       {showBlockModal && selectedSlot && (
         <BlockModal
           rooms={rooms}
