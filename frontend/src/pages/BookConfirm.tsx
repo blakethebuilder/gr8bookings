@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
-import { CheckCircle, Calendar, Clock, Users, Home, AlertCircle, Loader2, Share2, Copy, Check, Shield } from 'lucide-react'
+import { CheckCircle, Calendar, Clock, Users, Home, AlertCircle, Loader2, Share2, Copy, Check, Shield, Download } from 'lucide-react'
 import { format } from 'date-fns'
 import pb, { type Booking, type Room, type TimeSlot } from '../lib/pocketbase'
 
@@ -56,6 +56,37 @@ export default function BookConfirm() {
   }
 
   const isConfirmed = booking.status === 'confirmed' || booking.payment_status === 'paid'
+
+  // Generate ICS file for calendar download
+  const downloadICS = () => {
+    if (!room || !timeSlot) return
+    const dateStr = timeSlot.date.split(' ')[0]
+    const startDateTime = `${dateStr}T${timeSlot.start_time}:00`
+    const endDateTime = `${dateStr}T${timeSlot.end_time}:00`
+
+    const ics = [
+      'BEGIN:VCALENDAR',
+      'VERSION:2.0',
+      'PRODID:-//The Gr8 Escape//Booking//EN',
+      'BEGIN:VEVENT',
+      `DTSTART:${startDateTime.replace(/[-:]/g, '').replace('T', 'T')}`,
+      `DTEND:${endDateTime.replace(/[-:]/g, '').replace('T', 'T')}`,
+      `SUMMARY:Escape Room - ${room.name}`,
+      `DESCRIPTION:The Gr8 Escape - ${room.name}\\nBooking: ${booking.reference}\\nPlayers: ${booking.player_count}\\nPlease arrive 15 minutes early. No phones allowed.`,
+      `LOCATION:The Gr8 Escape, Pineslopes Office Park, Fourways, Johannesburg`,
+      `STATUS:CONFIRMED`,
+      `END:VEVENT`,
+      'END:VCALENDAR',
+    ].join('\r\n')
+
+    const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `gr8escape-${room.name.toLowerCase().replace(/\s+/g, '-')}.ics`
+    a.click()
+    URL.revokeObjectURL(url)
+  }
 
   return (
     <div className="min-h-screen bg-[#0a0a0a]">
@@ -155,6 +186,15 @@ export default function BookConfirm() {
             Each player should open this link and sign before arriving. Waivers are also available at reception.
           </p>
         </div>
+
+        {/* Calendar download */}
+        <button onClick={downloadICS} className="w-full bg-white/5 border border-gray-700/50 rounded-xl p-4 mb-6 text-left hover:bg-white/10 transition-colors flex items-center gap-3">
+          <Download size={20} className="text-gr8-gold" />
+          <div>
+            <p className="text-white font-medium text-sm">Add to Calendar</p>
+            <p className="text-xs text-gray-500">Download .ics file for Google Calendar, Apple Calendar, Outlook</p>
+          </div>
+        </button>
 
         <div className="bg-white/5 border border-gray-700/50 rounded-xl p-4 mb-8 text-sm text-gray-400 text-left">
           <p className="mb-2">A confirmation email will be sent to <strong className="text-white">{booking.customer_email}</strong></p>

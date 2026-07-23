@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { UserPlus, Loader2 } from 'lucide-react'
+import { UserPlus, Loader2, Copy, Check, ExternalLink } from 'lucide-react'
 import { format } from 'date-fns'
 import pb, { type Booking, type Room, type TimeSlot } from '../lib/pocketbase'
 import AssignGM from '../components/AssignGM'
@@ -18,6 +18,13 @@ export default function Bookings() {
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState<string>('all')
   const [assignModal, setAssignModal] = useState<{ booking: Booking; room: Room; timeSlot: TimeSlot } | null>(null)
+  const [copiedId, setCopiedId] = useState<string | null>(null)
+
+  const copyWaiverLink = (reference: string) => {
+    navigator.clipboard.writeText(`${window.location.origin}/waiver/${reference}`)
+    setCopiedId(reference)
+    setTimeout(() => setCopiedId(null), 2000)
+  }
 
   const loadData = async () => {
     try {
@@ -186,9 +193,18 @@ export default function Bookings() {
                       </td>
                       <td className="py-3 px-4">
                         {b.waiver_signed ? (
-                          <span className="text-green-400 text-xs font-bold">✓</span>
+                          <span className="text-green-400 text-xs font-bold">✓ Signed</span>
                         ) : (
-                          <span className="text-gray-600 text-xs">—</span>
+                          <button
+                            onClick={() => copyWaiverLink(b.reference)}
+                            className="flex items-center gap-1 px-2 py-1 rounded bg-white/5 text-gray-500 hover:text-gr8-red hover:bg-gr8-red/10 text-xs transition-colors"
+                          >
+                            {copiedId === b.reference ? (
+                              <><Check size={12} /> Copied</>
+                            ) : (
+                              <><Copy size={12} /> Send Waiver</>
+                            )}
+                          </button>
                         )}
                       </td>
                     </tr>
