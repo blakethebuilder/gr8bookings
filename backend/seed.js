@@ -7,8 +7,8 @@
  */
 
 const PB_URL = process.env.PB_URL || process.argv[2] || 'http://localhost:8090'
-const ADMIN_EMAIL = process.env.PB_ADMIN_EMAIL || 'admin@gr8escape.co.za'
-const ADMIN_PASSWORD = process.env.PB_ADMIN_PASSWORD || 'admin123456'
+const ADMIN_EMAIL = process.env.PB_ADMIN_EMAIL || 'grandmaster@gr8escape.co.za'
+const ADMIN_PASSWORD = process.env.PB_ADMIN_PASSWORD || 'gr8@2026!'
 
 let token = null
 
@@ -42,13 +42,14 @@ async function auth() {
 
 async function createSuperuser() {
   try {
-    await api('POST', '/api/superusers', {
+    await api('POST', '/api/collections/_superusers/records', {
       email: ADMIN_EMAIL,
       password: ADMIN_PASSWORD,
+      passwordConfirm: ADMIN_PASSWORD,
     })
     console.log('✓ Superuser created')
   } catch (e) {
-    if (e.message.includes('already exists')) {
+    if (e.message.includes('already exists') || e.message.includes('400')) {
       console.log('✓ Superuser already exists')
     } else {
       throw e
