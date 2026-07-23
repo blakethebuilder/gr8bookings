@@ -1,10 +1,22 @@
 const express = require('express')
 const crypto = require('crypto')
 const http = require('http')
+const rateLimit = require('express-rate-limit')
+const { loadSettings, generateSignature, getSetting } = require('./payfast-sign')
 
 const app = express()
 app.use(express.urlencoded({ extended: false }))
 app.use(express.json())
+
+// Rate limiting: 10 requests per minute per IP
+const limiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 10,
+  message: { error: 'Too many requests, please try again later' },
+  standardHeaders: true,
+  legacyHeaders: false,
+})
+app.use('/api/', limiter)
 
 const PB_URL = process.env.PB_URL || 'http://localhost:8090'
 const PB_ADMIN_EMAIL = process.env.PB_ADMIN_EMAIL || 'admin@gr8escape.co.za'
@@ -237,6 +249,43 @@ function getSettingSync(key) {
 function getPassphraseSync() {
   return settingsCache?.payfast_passphrase || ''
 }
+
+// ─── Payfast Signature Endpoint ────────────────────────────
+// Frontend calls this to get a signed form payload
+// Keeps merchant_key and passphrase server-side only
+app.post('/api/payfast/sign', (req, res) => {
+  try {
+    const { merchant_id, return_url, cancel_url, notify_url, name_first, name_last, email_address, m_payment_id, amount, item_name, item_description, custom_str1, custom_str2 } = req.body
+
+    const merchantKey = getSetting('payfast_merchant_key')
+    if (!merchant_id || !merchantKey) {
+      return res.status(400).json({ error: 'Payfast not configured' })
+    }
+
+    const params = {
+      merchant_id: merchantId,
+      merchant_key: merchantKey,
+      return_url: return_url || '',
+      cancel_url: cancel_url || '',
+      notify_url: notify_url || '',
+      name_first: name_first || '',
+      name_last: name_last || '',
+      email_address: email_address || '',
+      m_payment_id: m_payment_id || '',
+      amount: amount || '',
+      item_name: item_name || '',
+      item_description: item_description || '',
+      custom_str1: custom_str1 || '',
+      custom_str2: custom_str2 || '',
+    }
+
+    const signature = generateSignature(params)
+    res.json({ signature, params })
+  } catch (err) {
+    console.error('[Sign] Error:', err)
+    res.status(500).json({ error: 'Signature generation failed' })
+  }
+})
 
 // ─── Start Server ──────────────────────────────────────────
 const PORT = process.env.WEBHOOK_PORT || 3001

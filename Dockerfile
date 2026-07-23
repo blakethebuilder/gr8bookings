@@ -30,17 +30,25 @@ COPY --from=frontend-build /app/frontend/dist /usr/share/nginx/html
 # Copy nginx config
 COPY frontend/nginx.conf /etc/nginx/http.d/default.conf
 
-# Copy migrations + seed
+# Copy migrations + seed + auto-slots
 COPY backend/pb_migrations /pb/pb_migrations
 COPY backend/seed.js /app/backend/seed.js
 COPY backend/seed.sh /app/backend/seed.sh
+COPY backend/auto-slots.js /app/backend/auto-slots.js
 RUN chmod +x /app/backend/seed.sh
+
+# Copy webhook server (Payfast ITN + signature)
+COPY backend/webhook/server.js /app/webhook/server.js
+COPY backend/webhook/payfast-sign.js /app/webhook/payfast-sign.js
+COPY backend/webhook/package.json /app/webhook/package.json
+RUN cd /app/webhook && npm ci --only=production
 
 # Startup script
 RUN printf '#!/bin/sh\n\
 nginx &\n\
 cd /pb\n\
 ./pocketbase serve --http=0.0.0.0:8090 &\n\
+cd /app/webhook && node server.js &\n\
 sleep 2\n\
 /app/backend/seed.sh &\n\
 wait\n' > /app/start.sh && chmod +x /app/start.sh

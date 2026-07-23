@@ -432,9 +432,12 @@ export default function Book() {
                 <input
                   type="text"
                   value={formData.playerName}
-                  onChange={e => setFormData(prev => ({ ...prev, playerName: e.target.value }))}
+                  onChange={e => setFormData(prev => ({ ...prev, playerName: e.target.value.trim() }))}
                   className="w-full bg-white/5 border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-gr8-red transition-colors"
                   placeholder="John Smith"
+                  minLength={2}
+                  maxLength={100}
+                  required
                 />
               </div>
               <div>
@@ -442,9 +445,11 @@ export default function Book() {
                 <input
                   type="email"
                   value={formData.playerEmail}
-                  onChange={e => setFormData(prev => ({ ...prev, playerEmail: e.target.value }))}
+                  onChange={e => setFormData(prev => ({ ...prev, playerEmail: e.target.value.trim() }))}
                   className="w-full bg-white/5 border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-gr8-red transition-colors"
                   placeholder="john@example.com"
+                  maxLength={254}
+                  required
                 />
               </div>
               <div>

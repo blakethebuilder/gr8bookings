@@ -24,24 +24,8 @@ export default function BookConfirm() {
       if (b.expand?.room) setRoom(b.expand.room as Room)
       if (b.expand?.time_slot) setTimeSlot(b.expand.time_slot as TimeSlot)
 
-      // If booking is still pending and user returned from Payfast,
-      // mark it as confirmed (sandbox can't send ITN to localhost)
-      if (b.status === 'pending') {
-        setConfirming(true)
-        try {
-          await pb.collection('bookings').update(b.id, {
-            status: 'confirmed',
-            payment_status: 'paid',
-            payment_method: 'payfast_sandbox',
-          })
-          // Mark slot as full
-          await pb.collection('time_slots').update(b.time_slot, { status: 'full' })
-          setBooking({ ...b, status: 'confirmed', payment_status: 'paid' })
-        } catch (e) {
-          console.error('Failed to confirm:', e)
-        }
-        setConfirming(false)
-      }
+      // Security: Don't auto-confirm — ITN webhook handles real confirmation
+      // For sandbox testing, admin can manually confirm via dashboard
 
       setLoading(false)
     }).catch(err => {
