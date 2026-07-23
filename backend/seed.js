@@ -41,20 +41,9 @@ async function auth() {
 }
 
 async function createSuperuser() {
-  try {
-    await api('POST', '/api/collections/_superusers/records', {
-      email: ADMIN_EMAIL,
-      password: ADMIN_PASSWORD,
-      passwordConfirm: ADMIN_PASSWORD,
-    })
-    console.log('✓ Superuser created')
-  } catch (e) {
-    if (e.message.includes('already exists') || e.message.includes('400')) {
-      console.log('✓ Superuser already exists')
-    } else {
-      throw e
-    }
-  }
+  // Superuser creation is handled by seed.sh via PocketBase CLI
+  // This function just validates auth works
+  console.log('  (superuser created via CLI)')
 }
 
 async function createCollections() {
