@@ -4,11 +4,12 @@ import dayGridPlugin from '@fullcalendar/daygrid'
 import timeGridPlugin from '@fullcalendar/timegrid'
 import interactionPlugin from '@fullcalendar/interaction'
 import { format, addDays, startOfWeek, endOfWeek } from 'date-fns'
-import { RefreshCw, Zap } from 'lucide-react'
+import { RefreshCw, Zap, UserPlus, Ban } from 'lucide-react'
 import pb, { type Room, type Booking, type TimeSlot, type GmBlock } from '../lib/pocketbase'
 import { useRealtime } from '../hooks/useRealtime'
 import SlotGenerator from '../components/SlotGenerator'
 import BlockModal from '../components/BlockModal'
+import QuickBook from '../components/QuickBook'
 
 interface CalendarEvent {
   id: string
@@ -37,6 +38,7 @@ export default function GameMaster() {
   const [loading, setLoading] = useState(true)
   const [showSlotGen, setShowSlotGen] = useState(false)
   const [showBlockModal, setShowBlockModal] = useState(false)
+  const [showQuickBook, setShowQuickBook] = useState(false)
   const [selectedSlot, setSelectedSlot] = useState<{ start: Date; end: Date; room?: string } | null>(null)
   const [realtimeConnected, setRealtimeConnected] = useState(false)
 
@@ -141,12 +143,14 @@ export default function GameMaster() {
     return () => clearInterval(interval)
   }, [])
 
+  const [slotAction, setSlotAction] = useState<'book' | 'block' | null>(null)
+
   const handleDateSelect = (selectInfo: any) => {
     setSelectedSlot({
       start: selectInfo.start,
       end: selectInfo.end,
     })
-    setShowBlockModal(true)
+    setSlotAction(null) // Show action picker
   }
 
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null)
@@ -260,6 +264,49 @@ export default function GameMaster() {
             loadCalendarData()
           }}
         />
+      )}
+
+      {showQuickBook && selectedSlot && (
+        <QuickBook
+          rooms={rooms}
+          slot={selectedSlot}
+          onClose={() => {
+            setShowQuickBook(false)
+            setSelectedSlot(null)
+          }}
+          onComplete={() => {
+            setShowQuickBook(false)
+            setSelectedSlot(null)
+            loadCalendarData()
+          }}
+        />
+      )}
+
+      {/* Action picker when selecting empty slot */}
+      {selectedSlot && !slotAction && !showBlockModal && !showQuickBook && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => setSelectedSlot(null)}>
+          <div className="card-dark w-full max-w-sm" onClick={e => e.stopPropagation()}>
+            <p className="text-sm text-gray-400 mb-1">What would you like to do?</p>
+            <p className="text-white font-bold mb-4">
+              {format(selectedSlot.start, 'EEE, MMM d • HH:mm')} — {format(selectedSlot.end, 'HH:mm')}
+            </p>
+            <div className="flex gap-3">
+              <button onClick={() => { setShowQuickBook(true) }}
+                className="flex-1 flex flex-col items-center gap-2 p-4 rounded-lg bg-gr8-red/10 border border-gr8-red/30 hover:bg-gr8-red/20 transition-colors">
+                <UserPlus size={24} className="text-gr8-red" />
+                <span className="text-sm font-bold text-white">Book Session</span>
+                <span className="text-xs text-gray-500">Walk-in or phone booking</span>
+              </button>
+              <button onClick={() => { setShowBlockModal(true) }}
+                className="flex-1 flex flex-col items-center gap-2 p-4 rounded-lg bg-white/5 border border-gray-700 hover:bg-white/10 transition-colors">
+                <Ban size={24} className="text-gray-400" />
+                <span className="text-sm font-bold text-white">Block Slot</span>
+                <span className="text-xs text-gray-500">Maintenance or event</span>
+              </button>
+            </div>
+            <button onClick={() => setSelectedSlot(null)} className="w-full mt-3 text-sm text-gray-500 hover:text-white py-2">Cancel</button>
+          </div>
+        </div>
       )}
 
       {/* Event Detail Modal */}
