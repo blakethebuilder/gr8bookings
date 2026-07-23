@@ -22,8 +22,29 @@ export default function Bookings() {
     try {
       const b = await pb.collection('bookings').getFullList<BookingWithHost>({
         sort: '-created',
-        expand: 'room,time_slot,game_hosts(game_hosts.staff)',
+        expand: 'room,time_slot',
       })
+
+      // Fetch game hosts separately and attach to bookings
+      try {
+        const hosts = await pb.collection('game_hosts').getFullList({
+          expand: 'staff',
+          sort: '-assigned_at',
+        })
+        const hostMap = new Map<string, any[]>()
+        for (const h of hosts) {
+          const bookingId = h.booking
+          if (!hostMap.has(bookingId)) hostMap.set(bookingId, [])
+          hostMap.get(bookingId)!.push(h)
+        }
+        for (const booking of b) {
+          booking.expand = booking.expand || {}
+          booking.expand.game_hosts = hostMap.get(booking.id) || []
+        }
+      } catch {
+        // Game hosts not critical
+      }
+
       setBookings(b)
     } catch (e) {
       console.error('Failed to load bookings:', e)
