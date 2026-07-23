@@ -17,14 +17,18 @@ RUN apk add --no-cache \
     unzip \
     ca-certificates \
     nodejs \
+    nginx \
     wget
 
 # Download PocketBase
 ADD https://github.com/pocketbase/pocketbase/releases/download/v${PB_VERSION}/pocketbase_${PB_VERSION}_linux_amd64.zip /tmp/pb.zip
 RUN unzip /tmp/pb.zip -d /pb/ && rm /tmp/pb.zip && chmod +x /pb/pocketbase
 
-# Copy frontend build
-COPY --from=frontend-build /app/frontend/dist /pb/public
+# Copy frontend build to nginx
+COPY --from=frontend-build /app/frontend/dist /usr/share/nginx/html
+
+# Copy nginx config
+COPY nginx.conf /etc/nginx/http.d/default.conf
 
 # Copy migrations + seed
 COPY backend/pb_migrations /pb/pb_migrations
@@ -34,12 +38,13 @@ RUN chmod +x /app/backend/seed.sh
 
 # Startup script
 RUN printf '#!/bin/sh\n\
+nginx &\n\
 cd /pb\n\
-./pocketbase serve --http=0.0.0.0:8090 --publicDir=/pb/public &\n\
+./pocketbase serve --http=0.0.0.0:8090 &\n\
 sleep 2\n\
 /app/backend/seed.sh &\n\
 wait\n' > /app/start.sh && chmod +x /app/start.sh
 
-EXPOSE 8090
+EXPOSE 80
 
 CMD ["/app/start.sh"]
