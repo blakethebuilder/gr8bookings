@@ -3,6 +3,7 @@ import Layout from './components/Layout'
 import AuthGate from './components/AuthGate'
 import Login from './pages/Login'
 import GMDashboard from './pages/GMDashboard'
+import GameMaster from './pages/GameMaster'
 import Dashboard from './pages/Dashboard'
 import Rooms from './pages/Rooms'
 import Bookings from './pages/Bookings'
@@ -37,6 +38,7 @@ function App() {
       <Route element={<AuthGate allowedRoles={['grandmaster']} />}>
         <Route element={<Layout />}>
           <Route path="/grandmaster" element={<Dashboard />} />
+          <Route path="/calendar" element={<GameMaster />} />
           <Route path="/staff" element={<StaffManagement />} />
           <Route path="/settings" element={<Settings />} />
         </Route>

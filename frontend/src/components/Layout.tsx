@@ -11,7 +11,8 @@ const gmNavItems = [
 
 const grandmasterNavItems = [
   { to: '/grandmaster', icon: LayoutDashboard, label: 'Dashboard' },
-  { to: '/gm', icon: CalendarDays, label: 'Game Master HQ' },
+  { to: '/calendar', icon: CalendarDays, label: 'Calendar' },
+  { to: '/gm', icon: CalendarDays, label: 'My Games' },
   { to: '/rooms', icon: Calendar, label: 'Rooms' },
   { to: '/bookings', icon: BookOpen, label: 'Bookings' },
   { to: '/staff', icon: Users, label: 'Staff' },
