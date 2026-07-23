@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { Calendar, Users, Clock, ChevronRight, CreditCard, Loader2, CheckCircle } from 'lucide-react'
-import { format, addDays, isSameDay } from 'date-fns'
+import { format, addDays, isSameDay, parseISO } from 'date-fns'
 import pb, { type Room, type TimeSlot } from '../lib/pocketbase'
 import { md5 } from '../lib/md5'
 
@@ -25,6 +26,7 @@ const steps = [
 ]
 
 export default function Book() {
+  const [searchParams] = useSearchParams()
   const [step, setStep] = useState<Step>('rooms')
   const [rooms, setRooms] = useState<Room[]>([])
   const [slots, setSlots] = useState<TimeSlot[]>([])
@@ -41,6 +43,11 @@ export default function Book() {
     playerCount: 2,
   })
 
+  // Read URL params from availability page
+  const paramRoom = searchParams.get('room')
+  const paramDate = searchParams.get('date')
+  const paramTime = searchParams.get('time')
+
   // Load rooms and check Payfast config
   useEffect(() => {
     Promise.all([
@@ -49,16 +56,39 @@ export default function Book() {
         filter: 'is_active = true',
       }),
       pb.collection('settings').getFullList(),
-    ]).then(([rooms, settings]) => {
-      setRooms(rooms)
+    ]).then(([roomsData, settings]) => {
+      setRooms(roomsData)
       const merchantId = settings.find(s => s.key === 'payfast_merchant_id')?.value
       setPayfastConfigured(!!merchantId)
       setLoading(false)
+
+      // Auto-select from URL params
+      if (paramRoom && paramDate && paramTime) {
+        const matchedRoom = roomsData.find(r => r.slug === paramRoom)
+        if (matchedRoom) {
+          const dateObj = parseISO(paramDate)
+          setFormData(prev => ({ ...prev, room: matchedRoom, date: dateObj }))
+          setStep('slot') // Jump to slot selection
+
+          // Load slots and auto-select the matching one
+          pb.collection('time_slots').getFullList<TimeSlot>({
+            filter: `room = "${matchedRoom.id}" && date~"${paramDate}" && status = "available"`,
+            sort: 'start_time',
+          }).then(slotsData => {
+            setSlots(slotsData)
+            const matchedSlot = slotsData.find(s => s.start_time === paramTime)
+            if (matchedSlot) {
+              setFormData(prev => ({ ...prev, slot: matchedSlot }))
+              setStep('details') // Jump straight to details form
+            }
+          })
+        }
+      }
     }).catch(err => {
       console.error('[Book] Failed to load:', err)
       setLoading(false)
     })
-  }, [])
+  }, [paramRoom, paramDate, paramTime])
 
   // Load slots when room + date selected
   useEffect(() => {
