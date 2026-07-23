@@ -1,51 +1,55 @@
 import { useEffect, useState } from 'react'
-import { UserPlus, Check, Clock, Loader2 } from 'lucide-react'
+import { UserPlus, Loader2 } from 'lucide-react'
 import { format } from 'date-fns'
 import pb, { type Booking, type Room, type TimeSlot } from '../lib/pocketbase'
 import AssignGM from '../components/AssignGM'
 
-interface BookingWithHost extends Booking {
-  expand?: {
-    room?: Room
-    time_slot?: TimeSlot
-    game_hosts?: { id: string; staff: { name: string; avatar_color: string }; status: string }[]
-  }
+interface HostInfo {
+  staffName: string
+  staffColor: string
+  status: string
 }
 
 export default function Bookings() {
-  const [bookings, setBookings] = useState<BookingWithHost[]>([])
+  const [bookings, setBookings] = useState<Booking[]>([])
+  const [rooms, setRooms] = useState<Record<string, Room>>({})
+  const [slots, setSlots] = useState<Record<string, TimeSlot>>({})
+  const [hosts, setHosts] = useState<Record<string, HostInfo>>({})
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState<string>('all')
-  const [assignModal, setAssignModal] = useState<{ booking: BookingWithHost; room: Room; timeSlot: TimeSlot } | null>(null)
+  const [assignModal, setAssignModal] = useState<{ booking: Booking; room: Room; timeSlot: TimeSlot } | null>(null)
 
-  const loadBookings = async () => {
+  const loadData = async () => {
     try {
-      const b = await pb.collection('bookings').getFullList<BookingWithHost>({
-        sort: '-id',
-        expand: 'room,time_slot',
-      })
+      const [bookingsData, roomsList, slotsList, hostsList] = await Promise.all([
+        pb.collection('bookings').getFullList<Booking>({ sort: '-id' }),
+        pb.collection('rooms').getFullList<Room>(),
+        pb.collection('time_slots').getFullList<TimeSlot>(),
+        pb.collection('game_hosts').getFullList({ expand: 'staff' }).catch(() => [] as any[]),
+      ])
 
-      // Fetch game hosts separately and attach to bookings
-      try {
-        const hosts = await pb.collection('game_hosts').getFullList({
-          expand: 'staff',
-          sort: '-assigned_at',
-        })
-        const hostMap = new Map<string, any[]>()
-        for (const h of hosts) {
-          const bookingId = h.booking
-          if (!hostMap.has(bookingId)) hostMap.set(bookingId, [])
-          hostMap.get(bookingId)!.push(h)
+      // Build lookup maps
+      const roomMap: Record<string, Room> = {}
+      roomsList.forEach(r => { roomMap[r.id] = r })
+
+      const slotMap: Record<string, TimeSlot> = {}
+      slotsList.forEach(s => { slotMap[s.id] = s })
+
+      const hostMap: Record<string, HostInfo> = {}
+      const hostsArr = Array.isArray(hostsList) ? hostsList : []
+      for (const h of hostsArr) {
+        const staff = h.expand?.staff
+        hostMap[h.booking] = {
+          staffName: staff?.name || 'Unknown',
+          staffColor: staff?.avatar_color || '#666',
+          status: h.status,
         }
-        for (const booking of b) {
-          booking.expand = booking.expand || {}
-          booking.expand.game_hosts = hostMap.get(booking.id) || []
-        }
-      } catch {
-        // Game hosts not critical
       }
 
-      setBookings(b)
+      setRooms(roomMap)
+      setSlots(slotMap)
+      setHosts(hostMap)
+      setBookings(bookingsData)
     } catch (e) {
       console.error('Failed to load bookings:', e)
     } finally {
@@ -53,7 +57,7 @@ export default function Bookings() {
     }
   }
 
-  useEffect(() => { loadBookings() }, [])
+  useEffect(() => { loadData() }, [])
 
   const filtered = filter === 'all' ? bookings : bookings.filter(b => b.status === filter)
 
@@ -115,11 +119,9 @@ export default function Bookings() {
               </thead>
               <tbody>
                 {filtered.map(b => {
-                  const room = b.expand?.room
-                  const ts = b.expand?.time_slot
-                  const hosts = (b.expand?.game_hosts as any[]) || []
-                  const host = hosts[0]
-                  const hasGM = host && host.staff
+                  const room = rooms[b.room]
+                  const ts = slots[b.time_slot]
+                  const host = hosts[b.id]
 
                   return (
                     <tr key={b.id} className="border-b border-gray-800/50 hover:bg-white/5">
@@ -150,13 +152,13 @@ export default function Bookings() {
                         </span>
                       </td>
                       <td className="py-3 px-4">
-                        {hasGM ? (
+                        {host ? (
                           <div className="flex items-center gap-2">
                             <div className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold text-white"
-                              style={{ backgroundColor: host.staff.avatar_color }}>
-                              {host.staff.name[0]}
+                              style={{ backgroundColor: host.staffColor }}>
+                              {host.staffName[0]}
                             </div>
-                            <span className="text-xs text-gray-300">{host.staff.name}</span>
+                            <span className="text-xs text-gray-300">{host.staffName}</span>
                           </div>
                         ) : room && ts ? (
                           <button
@@ -194,7 +196,7 @@ export default function Bookings() {
           onClose={() => setAssignModal(null)}
           onComplete={() => {
             setAssignModal(null)
-            loadBookings()
+            loadData()
           }}
         />
       )}

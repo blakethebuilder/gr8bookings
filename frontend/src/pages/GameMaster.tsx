@@ -50,7 +50,7 @@ export default function GameMaster() {
       })
       setRooms(roomsData)
 
-      const [bookingsData, blocksData] = await Promise.all([
+      const [bookingsData, blocksData, hostsData] = await Promise.all([
         pb.collection('bookings').getFullList<Booking>({
           filter: 'status != "cancelled"',
           expand: 'room,time_slot',
@@ -58,7 +58,15 @@ export default function GameMaster() {
         pb.collection('gm_blocks').getFullList<GmBlock>({
           expand: 'room',
         }),
+        pb.collection('game_hosts').getFullList({ expand: 'staff' }).catch(() => [] as any[]),
       ])
+
+      // Build host lookup: bookingId → GM name
+      const hostMap: Record<string, string> = {}
+      const hostsArr = Array.isArray(hostsData) ? hostsData : []
+      for (const h of hostsArr) {
+        hostMap[h.booking] = h.expand?.staff?.name || ''
+      }
 
       const calendarEvents: CalendarEvent[] = []
 
@@ -67,11 +75,11 @@ export default function GameMaster() {
         const ts = b.expand?.time_slot as TimeSlot | undefined
         if (!room || !ts) continue
 
-        // Use time_slot date/time, not booking.created
-        const dateStr = ts.date.split(' ')[0] // "2026-07-24"
+        const gmName = hostMap[b.id]
+        const dateStr = ts.date.split(' ')[0]
         calendarEvents.push({
           id: `booking-${b.id}`,
-          title: `${b.customer_name} (${b.player_count}p)`,
+          title: `${b.customer_name} (${b.player_count}p)${gmName ? ` • ${gmName}` : ''}`,
           start: `${dateStr}T${ts.start_time}:00`,
           end: `${dateStr}T${ts.end_time}:00`,
           color: room.color,
