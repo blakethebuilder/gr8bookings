@@ -8,7 +8,7 @@ export default function StaffManagement() {
   const [loading, setLoading] = useState(true)
   const [showModal, setShowModal] = useState(false)
   const [editingStaff, setEditingStaff] = useState<Staff | null>(null)
-  const [form, setForm] = useState({ name: '', email: '', phone: '', role: 'gamemaster' as Staff['role'], pin_code: '' })
+  const [form, setForm] = useState({ name: '', email: '', phone: '', role: 'gamemaster' as Staff['role'], password: '' })
   const [saving, setSaving] = useState(false)
   const [visiblePins, setVisiblePins] = useState<Record<string, boolean>>({})
 
@@ -27,13 +27,13 @@ export default function StaffManagement() {
 
   const openAdd = () => {
     setEditingStaff(null)
-    setForm({ name: '', email: '', phone: '', role: 'gamemaster', pin_code: '' })
+    setForm({ name: '', email: '', phone: '', role: 'gamemaster', password: '' })
     setShowModal(true)
   }
 
   const openEdit = (s: Staff) => {
     setEditingStaff(s)
-    setForm({ name: s.name, email: s.email, phone: s.phone, role: s.role, pin_code: s.pin_code })
+    setForm({ name: s.name, email: s.email, phone: s.phone, role: s.role, password: s.password })
     setShowModal(true)
   }
 
@@ -97,7 +97,7 @@ export default function StaffManagement() {
                 <th className="text-left py-3 px-4 text-gray-500 font-medium">Email</th>
                 <th className="text-left py-3 px-4 text-gray-500 font-medium">Phone</th>
                 <th className="text-left py-3 px-4 text-gray-500 font-medium">Role</th>
-                <th className="text-left py-3 px-4 text-gray-500 font-medium">PIN</th>
+                <th className="text-left py-3 px-4 text-gray-500 font-medium">Password</th>
                 <th className="text-left py-3 px-4 text-gray-500 font-medium">Status</th>
                 <th className="text-right py-3 px-4 text-gray-500 font-medium">Actions</th>
               </tr>
@@ -132,7 +132,7 @@ export default function StaffManagement() {
                       onClick={() => setVisiblePins(prev => ({...prev, [s.id]: !prev[s.id]}))}
                       className="hover:text-white transition-colors cursor-pointer inline-flex items-center gap-1.5"
                     >
-                      {visiblePins[s.id] ? s.pin_code : '••••'}
+                      {visiblePins[s.id] ? s.password : '••••••••'}
                       {visiblePins[s.id] ? <EyeOff size={14} /> : <Eye size={14} />}
                     </button>
                   </td>
@@ -232,16 +232,15 @@ export default function StaffManagement() {
               </div>
 
               <div>
-                <label className="text-sm text-gray-400 mb-1 block">PIN Code</label>
+                <label className="text-sm text-gray-400 mb-1 block">Password</label>
                 <div className="relative">
                   <Key size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
                   <input
                     type="password"
-                    value={form.pin_code}
-                    onChange={e => setForm(f => ({ ...f, pin_code: e.target.value }))}
-                    className="w-full bg-white/5 border border-gray-700 rounded-lg pl-10 pr-4 py-2.5 text-white text-sm focus:outline-none focus:border-gr8-red transition-colors tracking-widest"
-                    placeholder="••••"
-                    maxLength={6}
+                    value={form.password}
+                    onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
+                    className="w-full bg-white/5 border border-gray-700 rounded-lg pl-10 pr-4 py-2.5 text-white text-sm focus:outline-none focus:border-gr8-red transition-colors"
+                    placeholder="Enter password"
                     required
                   />
                 </div>
@@ -257,7 +256,7 @@ export default function StaffManagement() {
                 </button>
                 <button
                   type="submit"
-                  disabled={saving || !form.name || !form.email || !form.pin_code}
+                  disabled={saving || !form.name || !form.email || !form.password}
                   className="flex-1 btn-gr8 flex items-center justify-center gap-2 disabled:opacity-50"
                 >
                   {saving ? <Loader2 size={16} className="animate-spin" /> : null}

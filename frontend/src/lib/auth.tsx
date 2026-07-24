@@ -9,14 +9,14 @@ export interface Staff {
   role: 'grandmaster' | 'gamemaster'
   avatar_color: string
   is_active: boolean
-  pin_code: string
+  password: string
   created: string
   updated: string
 }
 
 interface AuthContextType {
   staff: Staff | null
-  login: (email: string, pin: string) => Promise<{success: boolean; error?: string}>
+  login: (email: string, password: string) => Promise<{success: boolean; error?: string}>
   logout: () => void
   isGrandmaster: boolean
   loading: boolean
@@ -50,7 +50,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setLoading(false)
   }, [])
 
-  const login = async (email: string, pin: string): Promise<{success: boolean; error?: string}> => {
+  const login = async (email: string, password: string): Promise<{success: boolean; error?: string}> => {
     try {
       const result = await pb.collection('staff').getFirstListItem<Staff>(
         `email = "${email}" && is_active = true`
@@ -60,8 +60,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return { success: false, error: 'Staff account not found' }
       }
 
-      if (result.pin_code !== pin) {
-        return { success: false, error: 'Invalid PIN' }
+      if (result.password !== password) {
+        return { success: false, error: 'Invalid password' }
       }
 
       setStaff(result)

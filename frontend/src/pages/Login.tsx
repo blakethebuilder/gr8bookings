@@ -5,7 +5,7 @@ import { useAuth } from '../lib/auth'
 
 export default function Login() {
   const [email, setEmail] = useState('')
-  const [pin, setPin] = useState('')
+  const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const { login } = useAuth()
@@ -16,7 +16,7 @@ export default function Login() {
     setError('')
     setLoading(true)
 
-    const result = await login(email, pin)
+    const result = await login(email, password)
     if (result.success) {
       // Get staff from localStorage to route by role
       const stored = localStorage.getItem('gr8_staff')
@@ -68,16 +68,15 @@ export default function Login() {
             </div>
 
             <div>
-              <label className="text-sm text-gray-400 mb-1 block">PIN Code</label>
+              <label className="text-sm text-gray-400 mb-1 block">Password</label>
               <div className="relative">
                 <Lock size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
                 <input
                   type="password"
-                  value={pin}
-                  onChange={e => setPin(e.target.value)}
-                  className="w-full bg-white/5 border border-gray-700 rounded-lg pl-10 pr-4 py-2.5 text-white text-sm focus:outline-none focus:border-gr8-red transition-colors tracking-widest"
-                  placeholder="••••"
-                  maxLength={6}
+                  value={password}
+                  onChange={e => setPassword(e.target.value)}
+                  className="w-full bg-white/5 border border-gray-700 rounded-lg pl-10 pr-4 py-2.5 text-white text-sm focus:outline-none focus:border-gr8-red transition-colors"
+                  placeholder="Enter your password"
                   required
                 />
               </div>
@@ -92,7 +91,7 @@ export default function Login() {
 
             <button
               type="submit"
-              disabled={loading || !email || !pin}
+              disabled={loading || !email || !password}
               className="w-full btn-gr8 py-3 flex items-center justify-center gap-2 disabled:opacity-50"
             >
               {loading ? <Loader2 size={18} className="animate-spin" /> : null}
