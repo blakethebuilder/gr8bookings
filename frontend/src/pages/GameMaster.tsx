@@ -221,8 +221,8 @@ export default function GameMaster() {
             center: 'title',
             right: 'timeGridWeek,timeGridDay',
           }}
-          slotMinTime="10:00:00"
-          slotMaxTime="19:00:00"
+          slotMinTime="09:00:00"
+          slotMaxTime="20:30:00"
           slotDuration="00:30:00"
           allDaySlot={false}
           weekends={true}

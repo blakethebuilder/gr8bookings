@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { UserPlus, Loader2, Copy, Check, ExternalLink } from 'lucide-react'
+import { UserPlus, Loader2, Copy, Check, ExternalLink, Download } from 'lucide-react'
 import { format } from 'date-fns'
 import pb, { type Booking, type Room, type TimeSlot } from '../lib/pocketbase'
 import AssignGM from '../components/AssignGM'
@@ -24,6 +24,53 @@ export default function Bookings() {
     navigator.clipboard.writeText(`${window.location.origin}/waiver/${reference}`)
     setCopiedId(reference)
     setTimeout(() => setCopiedId(null), 2000)
+  }
+
+  const cancelBooking = async (b: Booking) => {
+    if (!window.confirm(`Cancel booking ${b.reference} for ${b.customer_name}? This cannot be undone.`)) return
+    try {
+      await pb.collection('bookings').update(b.id, { status: 'cancelled' })
+      if (b.time_slot) {
+        await pb.collection('time_slots').update(b.time_slot, { status: 'available' })
+      }
+      loadData()
+    } catch (e) {
+      console.error('Failed to cancel booking:', e)
+    }
+  }
+
+  const exportCSV = () => {
+    const headers = ['Reference', 'Customer', 'Email', 'Phone', 'Room', 'Date', 'Time', 'Players', 'Total', 'Deposit', 'Balance', 'Payment Type', 'Status', 'Payment', 'Waiver']
+    const rows = filtered.map(b => {
+      const room = rooms[b.room]
+      const ts = slots[b.time_slot]
+      return [
+        b.reference,
+        b.customer_name,
+        b.customer_email,
+        b.customer_phone || '',
+        room?.name || '',
+        ts ? format(new Date(ts.date), 'yyyy-MM-dd') : '',
+        ts ? `${ts.start_time}-${ts.end_time}` : '',
+        b.player_count,
+        b.total_amount,
+        b.deposit_amount || 0,
+        b.balance_due || 0,
+        b.payment_type || '',
+        b.status,
+        b.payment_status,
+        b.waiver_signed ? 'Yes' : 'No',
+      ]
+    })
+
+    const csv = [headers, ...rows].map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n')
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `gr8escape-bookings-${format(new Date(), 'yyyy-MM-dd')}.csv`
+    a.click()
+    URL.revokeObjectURL(url)
   }
 
   const loadData = async () => {
@@ -83,6 +130,13 @@ export default function Bookings() {
           <h1 className="text-3xl font-black text-white">Bookings</h1>
           <p className="text-gray-500 mt-1">{bookings.length} total bookings</p>
         </div>
+        <button
+          onClick={exportCSV}
+          className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/5 text-gray-400 hover:text-white hover:bg-white/10 text-sm font-medium transition-colors"
+        >
+          <Download size={16} />
+          Download CSV
+        </button>
       </div>
 
       {/* Filters */}
@@ -123,6 +177,7 @@ export default function Bookings() {
                   <th className="text-left py-3 px-4 text-gray-500 font-medium">GM</th>
                   <th className="text-left py-3 px-4 text-gray-500 font-medium">Payment</th>
                   <th className="text-left py-3 px-4 text-gray-500 font-medium">Waiver</th>
+                  <th className="text-left py-3 px-4 text-gray-500 font-medium">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -205,6 +260,18 @@ export default function Bookings() {
                               <><Copy size={12} /> Send Waiver</>
                             )}
                           </button>
+                        )}
+                      </td>
+                      <td className="py-3 px-4">
+                        {(b.status === 'pending' || b.status === 'confirmed') ? (
+                          <button
+                            onClick={() => cancelBooking(b)}
+                            className="px-2 py-1 rounded bg-red-500/20 text-red-400 text-xs font-bold hover:bg-red-500/30 transition-colors"
+                          >
+                            Cancel
+                          </button>
+                        ) : (
+                          <span className="text-xs text-gray-600">—</span>
                         )}
                       </td>
                     </tr>

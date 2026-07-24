@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react'
-import { Save, Check, Eye, EyeOff } from 'lucide-react'
+import { useEffect, useState, useRef } from 'react'
+import { Save, Check, Eye, EyeOff, Cog } from 'lucide-react'
 import pb from '../lib/pocketbase'
 
 interface Setting {
@@ -16,6 +16,8 @@ const SECRET_KEYS = ['payfast_merchant_key', 'payfast_passphrase', 'evolution_ap
 const SETTING_LABELS: Record<string, { label: string; hint?: string }> = {
   business_name: { label: 'Business Name' },
   business_hours: { label: 'Operating Hours', hint: 'e.g. Thu-Sun 11:00-18:00' },
+  cancellation_admin_fee: { label: 'Cancellation Admin Fee (Rands)', hint: 'Admin fee retained on deposit cancellation' },
+  cancellation_hours_before: { label: 'Cancellation Window (hours)', hint: 'Hours before game when cancellation is allowed' },
   default_currency: { label: 'Default Currency', hint: 'ISO code e.g. ZAR' },
   default_reset_buffer: { label: 'Reset Buffer (minutes)', hint: 'Time between games for room reset' },
   game_duration: { label: 'Game Duration (minutes)' },
@@ -40,6 +42,8 @@ export default function Settings() {
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
   const [showSecrets, setShowSecrets] = useState<Record<string, boolean>>({})
+  const [collapsedGroups, setCollapsedGroups] = useState<Record<string, boolean>>({})
+  const initRef = useRef(false)
 
   useEffect(() => {
     async function load() {
@@ -54,6 +58,31 @@ export default function Settings() {
     }
     load()
   }, [])
+
+  // Initialize collapsed state for groups with all empty values
+  useEffect(() => {
+    if (initRef.current || settings.length === 0) return
+    initRef.current = true
+
+    const initial: Record<string, boolean> = {}
+    const grouped = settings.reduce<Record<string, Setting[]>>((acc, s) => {
+      const group = s.key.startsWith('payfast') ? 'Payfast' :
+                    s.key.startsWith('evolution') ? 'Evolution API' :
+                    s.key.startsWith('whatsapp') || s.key.startsWith('reminder') ? 'WhatsApp' :
+                    s.key.startsWith('waiver') ? 'WhatsApp' :
+                    'General'
+      if (!acc[group]) acc[group] = []
+      acc[group].push(s)
+      return acc
+    }, {})
+
+    for (const [group, items] of Object.entries(grouped)) {
+      if (['Evolution API', 'WhatsApp'].includes(group) && items.every(s => !s.value.trim())) {
+        initial[group] = true
+      }
+    }
+    setCollapsedGroups(initial)
+  }, [settings])
 
   const updateSetting = (id: string, value: string) => {
     setSettings(prev => prev.map(s => s.id === id ? { ...s, value } : s))
@@ -123,53 +152,78 @@ export default function Settings() {
       </div>
 
       <div className="space-y-8">
-        {sortedGroups.map(([group, items]) => (
-          <div key={group} className="card-dark">
-            <div className="flex items-center gap-3 mb-4">
-              {group === 'Payfast' && <span className="text-lg">💳</span>}
-              {group === 'WhatsApp' && <span className="text-lg">📱</span>}
-              {group === 'Evolution API' && <span className="text-lg">🔗</span>}
-              {group === 'General' && <span className="text-lg">⚙️</span>}
-              <h2 className="text-lg font-bold text-white">{group}</h2>
-            </div>
-            <div className="space-y-4">
-              {items.map(s => {
-                const meta = SETTING_LABELS[s.key]
-                const isSecret = SECRET_KEYS.includes(s.key)
-                const isPassword = isSecret && !showSecrets[s.key]
+        {sortedGroups.map(([group, items]) => {
+          const isCollapsed = collapsedGroups[group]
 
-                return (
-                  <div key={s.id} className="flex flex-col gap-1">
-                    <label className="text-sm text-gray-400 font-medium">
-                      {meta?.label || s.description || s.key}
-                    </label>
-                    <div className="relative">
-                      <input
-                        type={isPassword ? 'password' : 'text'}
-                        value={s.value}
-                        onChange={e => updateSetting(s.id, e.target.value)}
-                        className="w-full bg-white/5 border border-gray-700 rounded-lg px-4 py-2.5 pr-10 text-white text-sm focus:outline-none focus:border-gr8-red transition-colors"
-                        placeholder={meta?.hint || s.key}
-                      />
-                      {isSecret && (
-                        <button
-                          type="button"
-                          onClick={() => setShowSecrets(prev => ({ ...prev, [s.key]: !prev[s.key] }))}
-                          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white transition-colors"
-                        >
-                          {showSecrets[s.key] ? <EyeOff size={16} /> : <Eye size={16} />}
-                        </button>
-                      )}
+          return (
+            <div key={group} className="card-dark">
+              <div className="flex items-center gap-3 mb-4">
+                {group === 'Payfast' && <span className="text-lg">💳</span>}
+                {group === 'WhatsApp' && <span className="text-lg">📱</span>}
+                {group === 'Evolution API' && <span className="text-lg">🔗</span>}
+                {group === 'General' && <span className="text-lg">⚙️</span>}
+                <h2 className="text-lg font-bold text-white">{group}</h2>
+              </div>
+              {isCollapsed ? (
+                <div className="bg-white/5 border border-dashed border-gray-700 rounded-lg p-5">
+                  <div className="flex items-center justify-between gap-4">
+                    <div>
+                      <p className="text-gray-400 text-sm">
+                        {group === 'Evolution API'
+                          ? 'Not configured — set up to enable WhatsApp notifications'
+                          : 'Not configured — set up WhatsApp messaging features'}
+                      </p>
                     </div>
-                    {meta?.hint && !isSecret && (
-                      <p className="text-xs text-gray-600">{meta.hint}</p>
-                    )}
+                    <button
+                      onClick={() => setCollapsedGroups(prev => ({ ...prev, [group]: false }))}
+                      className="btn-gr8 px-4 py-2 text-sm flex items-center gap-2 shrink-0"
+                    >
+                      <Cog size={14} />
+                      Configure
+                    </button>
                   </div>
-                )
-              })}
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {items.map(s => {
+                    const meta = SETTING_LABELS[s.key]
+                    const isSecret = SECRET_KEYS.includes(s.key)
+                    const isPassword = isSecret && !showSecrets[s.key]
+
+                    return (
+                      <div key={s.id} className="flex flex-col gap-1">
+                        <label className="text-sm text-gray-400 font-medium">
+                          {meta?.label || s.description || s.key}
+                        </label>
+                        <div className="relative">
+                          <input
+                            type={isPassword ? 'password' : 'text'}
+                            value={s.value}
+                            onChange={e => updateSetting(s.id, e.target.value)}
+                            className="w-full bg-white/5 border border-gray-700 rounded-lg px-4 py-2.5 pr-10 text-white text-sm focus:outline-none focus:border-gr8-red transition-colors"
+                            placeholder={meta?.hint || s.key}
+                          />
+                          {isSecret && (
+                            <button
+                              type="button"
+                              onClick={() => setShowSecrets(prev => ({ ...prev, [s.key]: !prev[s.key] }))}
+                              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white transition-colors"
+                            >
+                              {showSecrets[s.key] ? <EyeOff size={16} /> : <Eye size={16} />}
+                            </button>
+                          )}
+                        </div>
+                        {meta?.hint && !isSecret && (
+                          <p className="text-xs text-gray-600">{meta.hint}</p>
+                        )}
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
             </div>
-          </div>
-        ))}
+          )
+        })}
       </div>
     </div>
   )

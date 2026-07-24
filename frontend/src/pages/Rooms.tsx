@@ -1,15 +1,18 @@
 import { useEffect, useState } from 'react'
 import { Plus, Trash2, Edit, X, Loader2, ToggleLeft, ToggleRight } from 'lucide-react'
 import pb, { type Room } from '../lib/pocketbase'
+import { useToast } from '../lib/toast'
 
 const COLORS = ['#E53935', '#FFB900', '#4CAF50', '#9C27B0', '#FF9800', '#E040FB', '#06B6D4', '#F43F5E']
 
 export default function Rooms() {
+  const { toast, confirm } = useToast()
   const [rooms, setRooms] = useState<Room[]>([])
   const [loading, setLoading] = useState(true)
   const [showModal, setShowModal] = useState(false)
   const [editingRoom, setEditingRoom] = useState<Room | null>(null)
   const [saving, setSaving] = useState(false)
+  const [togglingId, setTogglingId] = useState<string | null>(null)
   const [form, setForm] = useState({
     name: '', slug: '', description: '', difficulty: 7,
     duration_minutes: 60, reset_buffer_minutes: 15,
@@ -68,19 +71,22 @@ export default function Rooms() {
       loadRooms()
     } catch (e) {
       console.error('Failed to save room:', e)
-      alert('Failed to save room. Check if slug is unique.')
+      toast('Failed to save room. Check if slug is unique.', 'error')
     } finally {
       setSaving(false)
     }
   }
 
   const toggleActive = async (room: Room) => {
+    setTogglingId(room.id)
     await pb.collection('rooms').update(room.id, { is_active: !room.is_active })
+    setTogglingId(null)
     loadRooms()
   }
 
   const deleteRoom = async (room: Room) => {
-    if (!confirm(`Delete "${room.name}"? This cannot be undone.`)) return
+    const confirmed = await confirm(`Delete "${room.name}"? This cannot be undone.`)
+    if (!confirmed) return
     await pb.collection('rooms').delete(room.id)
     loadRooms()
   }
@@ -119,9 +125,13 @@ export default function Rooms() {
                 <h3 className="text-lg font-bold text-white">{room.name}</h3>
               </div>
               <div className="flex gap-1">
-                <button onClick={() => toggleActive(room)} className="p-1.5 rounded hover:bg-white/10 text-gray-500 hover:text-white" title={room.is_active ? 'Disable' : 'Enable'}>
-                  {room.is_active ? <ToggleRight size={16} className="text-green-400" /> : <ToggleLeft size={16} />}
-                </button>
+                {togglingId === room.id ? (
+                  <Loader2 size={16} className="animate-spin text-gray-500" />
+                ) : (
+                  <button onClick={() => toggleActive(room)} className="p-1.5 rounded hover:bg-white/10 text-gray-500 hover:text-white" title={room.is_active ? 'Disable' : 'Enable'}>
+                    {room.is_active ? <ToggleRight size={16} className="text-green-400" /> : <ToggleLeft size={16} />}
+                  </button>
+                )}
                 <button onClick={() => openEdit(room)} className="p-1.5 rounded hover:bg-white/10 text-gray-500 hover:text-white" title="Edit">
                   <Edit size={14} />
                 </button>

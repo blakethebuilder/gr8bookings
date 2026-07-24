@@ -4,7 +4,7 @@
 
 | Issue | Severity | Status |
 |-------|----------|--------|
-| Collection rules public | High | ⚠️ Open — needs PocketBase auth recreate |
+| Collection rules public | High | ⚠️ Open — staff collection has public read. Recommend: migrate staff to PocketBase auth collection (requires recreating collection). Until then, PIN codes are hashed on creation (future) and masked in UI. |
 | Payfast secrets on client | Medium | ✅ Fixed — server-side signature |
 | No input validation | Low | ✅ Fixed — name/email validation |
 | Auto-confirm bypass | Medium | ✅ Fixed — removed |
@@ -47,3 +47,12 @@
 | Docker deployment | Tested |
 | Unit tests | Not implemented |
 | E2E tests | Not implemented |
+
+## Architecture Notes
+
+### Staff Authentication Migration Path
+The current PIN-based auth uses a regular PocketBase collection (`staff`) rather than PocketBase's built-in auth system. This means collection rules must remain public for login to work. Recommended migration:
+1. Create a proper PocketBase auth collection for staff
+2. Migrate staff records to the auth collection
+3. Update the frontend to use `pb.collection('staff').authWithPassword()` instead of PIN comparison
+4. Then lock down collection rules to authenticated only

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Users, Plus, X, Loader2, Shield, ShieldOff, Mail, Phone, Key } from 'lucide-react'
+import { Users, Plus, X, Loader2, Shield, ShieldOff, Mail, Phone, Key, Eye, EyeOff } from 'lucide-react'
 import pb from '../lib/pocketbase'
 import type { Staff } from '../lib/auth'
 
@@ -10,6 +10,7 @@ export default function StaffManagement() {
   const [editingStaff, setEditingStaff] = useState<Staff | null>(null)
   const [form, setForm] = useState({ name: '', email: '', phone: '', role: 'gamemaster' as Staff['role'], pin_code: '' })
   const [saving, setSaving] = useState(false)
+  const [visiblePins, setVisiblePins] = useState<Record<string, boolean>>({})
 
   const loadStaff = async () => {
     try {
@@ -126,7 +127,15 @@ export default function StaffManagement() {
                       {s.role === 'grandmaster' ? 'Grandmaster' : 'Game Master'}
                     </span>
                   </td>
-                  <td className="py-3 px-4 font-mono text-xs text-gray-500">{s.pin_code}</td>
+                  <td className="py-3 px-4 font-mono text-xs text-gray-500">
+                    <button
+                      onClick={() => setVisiblePins(prev => ({...prev, [s.id]: !prev[s.id]}))}
+                      className="hover:text-white transition-colors cursor-pointer inline-flex items-center gap-1.5"
+                    >
+                      {visiblePins[s.id] ? s.pin_code : '••••'}
+                      {visiblePins[s.id] ? <EyeOff size={14} /> : <Eye size={14} />}
+                    </button>
+                  </td>
                   <td className="py-3 px-4">
                     <span className={`px-2 py-1 rounded-full text-xs font-bold ${
                       s.is_active ? 'bg-green-500/20 text-green-400' : 'bg-gray-500/20 text-gray-500'

@@ -4,6 +4,7 @@ import { Calendar, Users, Clock, ChevronRight, CreditCard, Loader2, CheckCircle 
 import { format, addDays, isSameDay, parseISO } from 'date-fns'
 import pb, { type Room, type TimeSlot } from '../lib/pocketbase'
 import { md5 } from '../lib/md5'
+import { useToast } from '../lib/toast'
 
 type Step = 'rooms' | 'date' | 'slot' | 'details' | 'payment' | 'confirm'
 
@@ -26,7 +27,20 @@ const steps = [
   { key: 'payment', label: 'Payment', icon: CreditCard },
 ]
 
+const roomEmoji = (slug: string): string => {
+  const map: Record<string, string> = {
+    asylum: '\u{1F3E5}',
+    trapped: '\u{1F525}',
+    hunted: '\u{1F3AF}',
+    nightmare: '\u{1F631}',
+    basement: '\u{1F512}',
+    witch: '\u{1F9D9}',
+  }
+  return map[slug] ?? '\u{1F6AA}'
+}
+
 export default function Book() {
+  const { toast } = useToast()
   const [searchParams] = useSearchParams()
   const [step, setStep] = useState<Step>('rooms')
   const [rooms, setRooms] = useState<Room[]>([])
@@ -63,41 +77,45 @@ export default function Book() {
       const merchantId = settings.find(s => s.key === 'payfast_merchant_id')?.value
       setPayfastConfigured(!!merchantId)
       setLoading(false)
-
-      // Auto-select from URL params
-      if (paramRoom) {
-        const matchedRoom = roomsData.find(r => r.slug === paramRoom)
-        if (matchedRoom) {
-          setFormData(prev => ({ ...prev, room: matchedRoom }))
-
-          if (paramDate && paramTime) {
-            // Full auto-select: room + date + time → jump to details
-            const dateObj = parseISO(paramDate)
-            setFormData(prev => ({ ...prev, room: matchedRoom, date: dateObj }))
-            setStep('slot')
-
-            pb.collection('time_slots').getFullList<TimeSlot>({
-              filter: `room = "${matchedRoom.id}" && date~"${paramDate}" && status = "available"`,
-              sort: 'start_time',
-            }).then(slotsData => {
-              setSlots(slotsData)
-              const matchedSlot = slotsData.find(s => s.start_time === paramTime)
-              if (matchedSlot) {
-                setFormData(prev => ({ ...prev, slot: matchedSlot }))
-                setStep('details')
-              }
-            })
-          } else {
-            // Room only → skip to date selection
-            setStep('date')
-          }
-        }
-      }
     }).catch(err => {
       console.error('[Book] Failed to load:', err)
+      setPayfastConfigured(false)
       setLoading(false)
     })
-  }, [paramRoom, paramDate, paramTime])
+  }, [])
+
+  // Auto-select from URL params once rooms are loaded
+  useEffect(() => {
+    if (loading || rooms.length === 0) return
+    if (!paramRoom) return
+
+    const matchedRoom = rooms.find(r => r.slug === paramRoom)
+    if (!matchedRoom) return
+
+    setFormData(prev => ({ ...prev, room: matchedRoom }))
+
+    if (paramDate && paramTime) {
+      // Full auto-select: room + date + time → jump to details
+      const dateObj = parseISO(paramDate)
+      setFormData(prev => ({ ...prev, room: matchedRoom, date: dateObj }))
+      setStep('slot')
+
+      pb.collection('time_slots').getFullList<TimeSlot>({
+        filter: `room = "${matchedRoom.id}" && date~"${paramDate}" && status = "available"`,
+        sort: 'start_time',
+      }).then(slotsData => {
+        setSlots(slotsData)
+        const matchedSlot = slotsData.find(s => s.start_time === paramTime)
+        if (matchedSlot) {
+          setFormData(prev => ({ ...prev, slot: matchedSlot }))
+          setStep('details')
+        }
+      })
+    } else {
+      // Room only → skip to date selection
+      setStep('date')
+    }
+  }, [rooms, loading, paramRoom, paramDate, paramTime])
 
   // Load slots when room + date selected
   useEffect(() => {
@@ -127,7 +145,7 @@ export default function Book() {
 
   // Calculate amounts based on payment type
   const fullAmount = formData.room ? formData.playerCount * formData.room.price_per_player : 0
-  const depositAmount = 640 // R640 covers 2 tickets at R320 each
+  const depositAmount = formData.room ? Math.min(formData.room.min_players * formData.room.price_per_player, fullAmount) : 0
   const amountToPay = formData.paymentType === 'deposit' ? Math.min(depositAmount, fullAmount) : fullAmount
   const balanceDue = fullAmount - amountToPay
 
@@ -232,7 +250,7 @@ export default function Book() {
       }
     } catch (e) {
       console.error('Booking failed:', e)
-      alert('Something went wrong. Please try again.')
+      toast('Something went wrong. Please try again.', 'error')
     } finally {
       setSubmitting(false)
     }
@@ -311,6 +329,9 @@ export default function Book() {
                     className="h-40 bg-cover bg-center relative"
                     style={{ backgroundColor: room.color + '22' }}
                   >
+                    <span className="absolute inset-0 flex items-center justify-center text-5xl opacity-30 select-none">
+                      {roomEmoji(room.slug)}
+                    </span>
                     <div className="absolute inset-0 bg-gradient-to-t from-[#1e1e1e] to-transparent" />
                     <div className="absolute bottom-3 left-3 flex items-center gap-2">
                       <div className="w-3 h-3 rounded-full" style={{ backgroundColor: room.color }} />
@@ -350,7 +371,7 @@ export default function Book() {
             <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-7 gap-3">
               {Array.from({ length: 14 }, (_, i) => addDays(new Date(), i + 1)).map(date => {
                 const dayOfWeek = date.getDay()
-                const isBusinessDay = dayOfWeek >= 4 || dayOfWeek === 0 // Thu-Sun
+                const isBusinessDay = true // All 7 days open
                 return (
                   <button
                     key={date.toISOString()}
@@ -561,8 +582,8 @@ export default function Book() {
                     }`}
                   >
                     <p className="text-white font-bold mb-1">Deposit</p>
-                    <p className="text-2xl font-black text-gr8-gold">R640</p>
-                    <p className="text-xs text-gray-500 mt-1">Covers 2 tickets. Pay rest on arrival.</p>
+                    <p className="text-2xl font-black text-gr8-gold">R{depositAmount}</p>
+                    <p className="text-xs text-gray-500 mt-1">Covers {formData.room.min_players} player{formData.room.min_players !== 1 ? 's' : ''}. R{balanceDue} balance due on arrival.</p>
                   </button>
                   <button
                     onClick={() => setFormData(prev => ({ ...prev, paymentType: 'full' }))}

@@ -29,6 +29,7 @@ export default function Waiver() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const [isDrawing, setIsDrawing] = useState(false)
   const [hasSignature, setHasSignature] = useState(false)
+  const canvasInited = useRef(false)
 
   const [form, setForm] = useState<WaiverForm>({
     playerName: '',
@@ -76,30 +77,40 @@ export default function Waiver() {
 
   // Canvas drawing
   useEffect(() => {
-    const canvas = canvasRef.current
-    if (!canvas) return
-    const ctx = canvas.getContext('2d')
-    if (!ctx) return
+    if (loading) return
 
-    // Set canvas size
-    canvas.width = canvas.offsetWidth
-    canvas.height = canvas.offsetHeight
+    const timer = requestAnimationFrame(() => {
+      const canvas = canvasRef.current
+      if (!canvas || canvasInited.current) return
+      const ctx = canvas.getContext('2d')
+      if (!ctx) return
 
-    // White background
-    ctx.fillStyle = '#1e1e1e'
-    ctx.fillRect(0, 0, canvas.width, canvas.height)
+      // Set canvas size with fallback
+      const width = canvas.offsetWidth || 600
+      const height = canvas.offsetHeight || 120
+      canvas.width = width
+      canvas.height = height
 
-    // Guide line
-    ctx.strokeStyle = '#555'
-    ctx.lineWidth = 1
-    ctx.beginPath()
-    ctx.moveTo(20, canvas.height - 30)
-    ctx.lineTo(canvas.width - 20, canvas.height - 30)
-    ctx.stroke()
+      // Dark background
+      ctx.fillStyle = '#1e1e1e'
+      ctx.fillRect(0, 0, width, height)
 
-    ctx.fillStyle = '#666'
-    ctx.font = '11px sans-serif'
-    ctx.fillText('Sign here', 20, canvas.height - 10)
+      // Guide line
+      ctx.strokeStyle = '#555'
+      ctx.lineWidth = 1
+      ctx.beginPath()
+      ctx.moveTo(20, height - 30)
+      ctx.lineTo(width - 20, height - 30)
+      ctx.stroke()
+
+      ctx.fillStyle = '#666'
+      ctx.font = '11px sans-serif'
+      ctx.fillText('Sign here', 20, height - 10)
+
+      canvasInited.current = true
+    })
+
+    return () => cancelAnimationFrame(timer)
   }, [loading])
 
   const startDraw = (e: React.MouseEvent | React.TouchEvent) => {
@@ -139,6 +150,7 @@ export default function Waiver() {
   const endDraw = () => setIsDrawing(false)
 
   const clearSignature = () => {
+    canvasInited.current = false
     const canvas = canvasRef.current
     if (!canvas) return
     const ctx = canvas.getContext('2d')

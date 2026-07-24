@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { X, Ban, Loader2 } from 'lucide-react'
 import { format } from 'date-fns'
 import pb, { type Room } from '../lib/pocketbase'
+import { useToast } from '../lib/toast'
 
 interface Props {
   rooms: Room[]
@@ -11,6 +12,7 @@ interface Props {
 }
 
 export default function BlockModal({ rooms, slot, onClose, onComplete }: Props) {
+  const { toast } = useToast()
   const [selectedRoom, setSelectedRoom] = useState(rooms[0]?.id || '')
   const [reason, setReason] = useState('')
   const [saving, setSaving] = useState(false)
@@ -42,6 +44,7 @@ export default function BlockModal({ rooms, slot, onClose, onComplete }: Props) 
       onComplete()
     } catch (e) {
       console.error('Failed to create block:', e)
+      toast('Failed to block the time slot. Please try again.', 'error')
     } finally {
       setSaving(false)
     }

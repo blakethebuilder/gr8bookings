@@ -108,6 +108,9 @@ async function createCollections() {
         { name: 'payment_method', type: 'text' },
         { name: 'payment_id', type: 'text' },
         { name: 'notes', type: 'text' },
+        { name: 'deposit_amount', type: 'number' },
+        { name: 'balance_due', type: 'number' },
+        { name: 'payment_type', type: 'select', values: ['deposit', 'full'] },
         { name: 'waiver_signed', type: 'bool' },
         { name: 'waiver_url', type: 'text' },
         { name: 'reminder_sent', type: 'bool' },
@@ -262,11 +265,11 @@ async function createCollections() {
 
 async function seedRooms() {
   const rooms = [
-    { name: 'Asylum Escape', slug: 'asylum-escape', description: "Dr. Mulasy Tretour's office holds evidence of his vicious crimes", difficulty: 7, duration_minutes: 60, reset_buffer_minutes: 15, min_players: 2, max_players: 8, price_per_player: 250, currency: 'ZAR', color: '#E53935', is_active: true, sort_order: 1 },
-    { name: 'Trapped', slug: 'trapped', description: 'A fire is tearing through the mansion', difficulty: 8, duration_minutes: 60, reset_buffer_minutes: 15, min_players: 2, max_players: 8, price_per_player: 250, currency: 'ZAR', color: '#FFB900', is_active: true, sort_order: 2 },
-    { name: 'The Hunted', slug: 'the-hunted', description: "Can you escape the creature that's taken the town?", difficulty: 8.5, duration_minutes: 60, reset_buffer_minutes: 15, min_players: 2, max_players: 8, price_per_player: 250, currency: 'ZAR', color: '#4CAF50', is_active: true, sort_order: 3 },
-    { name: 'Nightmare', slug: 'nightmare', description: "Break the Sandman's curse or join his collection", difficulty: 9, duration_minutes: 60, reset_buffer_minutes: 15, min_players: 2, max_players: 8, price_per_player: 250, currency: 'ZAR', color: '#9C27B0', is_active: true, sort_order: 4 },
-    { name: 'The Basement', slug: 'the-basement', description: '60 minutes to escape his chamber for good', difficulty: 10, duration_minutes: 60, reset_buffer_minutes: 15, min_players: 2, max_players: 8, price_per_player: 250, currency: 'ZAR', color: '#FF9800', is_active: true, sort_order: 5 },
+    { name: 'Asylum Escape', slug: 'asylum-escape', description: "Dr. Mulasy Tretour's office holds evidence of his vicious crimes", difficulty: 7, duration_minutes: 60, reset_buffer_minutes: 15, min_players: 2, max_players: 7, price_per_player: 320, currency: 'ZAR', color: '#E53935', is_active: true, sort_order: 1 },
+    { name: 'Trapped', slug: 'trapped', description: 'A fire is tearing through the mansion', difficulty: 8, duration_minutes: 60, reset_buffer_minutes: 15, min_players: 2, max_players: 7, price_per_player: 320, currency: 'ZAR', color: '#FFB900', is_active: true, sort_order: 2 },
+    { name: 'The Hunted', slug: 'the-hunted', description: "Can you escape the creature that's taken the town?", difficulty: 8.5, duration_minutes: 60, reset_buffer_minutes: 15, min_players: 2, max_players: 7, price_per_player: 320, currency: 'ZAR', color: '#4CAF50', is_active: true, sort_order: 3 },
+    { name: 'Nightmare', slug: 'nightmare', description: "Break the Sandman's curse or join his collection", difficulty: 9, duration_minutes: 60, reset_buffer_minutes: 15, min_players: 2, max_players: 7, price_per_player: 320, currency: 'ZAR', color: '#9C27B0', is_active: true, sort_order: 4 },
+    { name: 'The Basement', slug: 'the-basement', description: '60 minutes to escape his chamber for good', difficulty: 10, duration_minutes: 60, reset_buffer_minutes: 15, min_players: 2, max_players: 7, price_per_player: 320, currency: 'ZAR', color: '#FF9800', is_active: true, sort_order: 5 },
     { name: "The Witch's Curse", slug: 'the-witchs-curse', description: 'Solve magical puzzles in 45 minutes — outdoor container experience', duration_minutes: 45, reset_buffer_minutes: 10, min_players: 2, max_players: 4, price_per_player: 320, currency: 'ZAR', color: '#E040FB', is_active: true, sort_order: 6 },
   ]
 
@@ -316,6 +319,8 @@ async function seedSettings() {
     { key: 'reminder_hours_before', value: '3', description: 'Hours before game for reminder' },
     { key: 'waiver_enabled', value: 'true', description: 'Enable waivers' },
     { key: 'waiver_hours_before', value: '24', description: 'Hours before game for waiver' },
+    { key: 'cancellation_hours_before', value: '24', description: 'Hours before game when cancellation is allowed' },
+    { key: 'cancellation_admin_fee', value: '50', description: 'Admin fee retained on deposit cancellation' },
   ]
 
   for (const s of settings) {
@@ -339,7 +344,6 @@ async function generateTimeSlots() {
     const date = new Date(now)
     date.setDate(date.getDate() + dayOffset)
     const dow = date.getDay()
-    if (dow !== 0 && dow !== 4 && dow !== 5 && dow !== 6) continue // Sun,Thu,Fri,Sat only
 
     const dateStr = date.toISOString().split('T')[0] // YYYY-MM-DD
 

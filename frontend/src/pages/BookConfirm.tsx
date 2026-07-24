@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
-import { CheckCircle, Calendar, Clock, Users, Home, AlertCircle, Loader2, Share2, Copy, Check, Shield, Download } from 'lucide-react'
+import { CheckCircle, Calendar, Clock, Users, Home, AlertCircle, Loader2, Share2, Copy, Check, Shield, Download, XCircle } from 'lucide-react'
 import { format } from 'date-fns'
 import pb, { type Booking, type Room, type TimeSlot } from '../lib/pocketbase'
 
@@ -12,6 +12,10 @@ export default function BookConfirm() {
   const [loading, setLoading] = useState(true)
   const [confirming, setConfirming] = useState(false)
   const [copied, setCopied] = useState(false)
+  const [showCancelDialog, setShowCancelDialog] = useState(false)
+  const [cancelling, setCancelling] = useState(false)
+  const [cancelHoursBefore, setCancelHoursBefore] = useState('24')
+  const [cancelAdminFee, setCancelAdminFee] = useState('50')
 
   useEffect(() => {
     if (!reference) return
@@ -23,6 +27,16 @@ export default function BookConfirm() {
       setBooking(b)
       if (b.expand?.room) setRoom(b.expand.room as Room)
       if (b.expand?.time_slot) setTimeSlot(b.expand.time_slot as TimeSlot)
+
+      // Load cancellation settings
+      try {
+        const hoursSetting = await pb.collection('settings').getFirstListItem('key = "cancellation_hours_before"')
+        const feeSetting = await pb.collection('settings').getFirstListItem('key = "cancellation_admin_fee"')
+        if (hoursSetting) setCancelHoursBefore(hoursSetting.value)
+        if (feeSetting) setCancelAdminFee(feeSetting.value)
+      } catch (_) {
+        // Use defaults
+      }
 
       // Security: Don't auto-confirm — ITN webhook handles real confirmation
       // For sandbox testing, admin can manually confirm via dashboard
@@ -56,6 +70,22 @@ export default function BookConfirm() {
   }
 
   const isConfirmed = booking.status === 'confirmed' || booking.payment_status === 'paid'
+
+  const handleCancel = async () => {
+    setCancelling(true)
+    try {
+      await pb.collection('bookings').update(booking.id, { status: 'cancelled' })
+      if (booking.time_slot) {
+        await pb.collection('time_slots').update(booking.time_slot, { status: 'available' })
+      }
+      setBooking(prev => prev ? { ...prev, status: 'cancelled' } : null)
+      setShowCancelDialog(false)
+    } catch (e) {
+      console.error('Failed to cancel booking:', e)
+    } finally {
+      setCancelling(false)
+    }
+  }
 
   // Generate ICS file for calendar download
   const downloadICS = () => {
@@ -102,6 +132,8 @@ export default function BookConfirm() {
         <div className="mb-8">
           {confirming ? (
             <Loader2 size={64} className="text-gr8-gold mx-auto mb-4 animate-spin" />
+          ) : booking.status === 'cancelled' ? (
+            <XCircle size={64} className="text-red-400 mx-auto mb-4" />
           ) : isConfirmed ? (
             <CheckCircle size={64} className="text-green-400 mx-auto mb-4" />
           ) : (
@@ -109,7 +141,7 @@ export default function BookConfirm() {
           )}
 
           <h1 className="text-3xl font-black text-white mb-2">
-            {confirming ? 'Confirming Payment...' : isConfirmed ? 'Booking Confirmed!' : 'Booking Received'}
+            {confirming ? 'Confirming Payment...' : booking.status === 'cancelled' ? 'Booking Cancelled' : isConfirmed ? 'Booking Confirmed!' : 'Booking Received'}
           </h1>
           <p className="text-gray-400">
             Reference: <span className="text-gr8-gold font-mono font-bold">{booking.reference}</span>
@@ -200,6 +232,69 @@ export default function BookConfirm() {
           <p className="mb-2">A confirmation email will be sent to <strong className="text-white">{booking.customer_email}</strong></p>
           <p>Please arrive <strong className="text-white">15 minutes early</strong>. No phones or recording devices allowed in the rooms.</p>
         </div>
+
+        {/* Cancel Booking */}
+        {(booking.status === 'pending' || booking.status === 'confirmed') && (
+          <div className="border border-red-500/30 bg-red-500/5 rounded-xl p-6 mb-8 text-left">
+            <div className="flex items-center gap-3 mb-3">
+              <XCircle size={20} className="text-red-400" />
+              <h3 className="text-lg font-bold text-white">Cancel Booking</h3>
+            </div>
+            <p className="text-sm text-gray-400 mb-4">
+              Free cancellation up to {cancelHoursBefore} hours before your game. A R{cancelAdminFee} admin fee applies on deposits.
+            </p>
+            <button
+              onClick={() => setShowCancelDialog(true)}
+              className="px-4 py-2 rounded-lg bg-red-500/20 text-red-400 text-sm font-bold hover:bg-red-500/30 transition-colors"
+            >
+              Cancel Booking
+            </button>
+          </div>
+        )}
+
+        {/* Cancelled message */}
+        {booking.status === 'cancelled' && (
+          <div className="border border-orange-500/30 bg-orange-500/5 rounded-xl p-6 mb-8 text-left">
+            <div className="flex items-center gap-3 mb-3">
+              <XCircle size={20} className="text-orange-400" />
+              <h3 className="text-lg font-bold text-white">Booking Cancelled</h3>
+            </div>
+            <p className="text-sm text-gray-400">
+              Your booking has been cancelled. Refunds, if applicable, will be processed within 5-7 business days.
+            </p>
+          </div>
+        )}
+
+        {/* Cancel Confirmation Dialog */}
+        {showCancelDialog && (
+          <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+            <div className="bg-[#1e1e1e] border border-gray-700 rounded-xl p-6 max-w-md w-full">
+              <h3 className="text-lg font-bold text-white mb-2">Cancel Booking?</h3>
+              <p className="text-sm text-gray-400 mb-4">
+                Are you sure you want to cancel your booking{room ? ` for ${room.name}` : ''}?
+                {booking.payment_type === 'deposit' && booking.deposit_amount > 0 && (
+                  <> If you paid a deposit, R{Math.max(0, Number(booking.deposit_amount) - Number(cancelAdminFee))} will be refunded within 5-7 business days.</>
+                )}
+              </p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setShowCancelDialog(false)}
+                  className="flex-1 px-4 py-2 rounded-lg border border-gray-700 text-gray-400 text-sm font-medium hover:text-white hover:border-gray-500 transition-colors"
+                  disabled={cancelling}
+                >
+                  Keep Booking
+                </button>
+                <button
+                  onClick={handleCancel}
+                  disabled={cancelling}
+                  className="flex-1 px-4 py-2 rounded-lg bg-red-500/20 text-red-400 text-sm font-bold hover:bg-red-500/30 transition-colors disabled:opacity-50"
+                >
+                  {cancelling ? 'Cancelling...' : 'Yes, Cancel'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <Link to="/" className="btn-gr8 px-8 py-3 flex items-center justify-center gap-2">
