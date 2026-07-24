@@ -60,7 +60,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return { success: false, error: 'Staff account not found' }
       }
 
-      if (result.password !== password) {
+      // Accept either password or legacy pin_code field
+      const pw = (result as any).password || (result as any).pin_code
+      if (pw !== password) {
         return { success: false, error: 'Invalid password' }
       }
 

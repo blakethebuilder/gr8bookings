@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { UserPlus, Loader2, Copy, Check, ExternalLink, Download } from 'lucide-react'
+import { UserPlus, Loader2, Copy, Check, ExternalLink, Download, CreditCard } from 'lucide-react'
 import { format } from 'date-fns'
 import pb, { type Booking, type Room, type TimeSlot } from '../lib/pocketbase'
 import AssignGM from '../components/AssignGM'
@@ -36,6 +36,20 @@ export default function Bookings() {
       loadData()
     } catch (e) {
       console.error('Failed to cancel booking:', e)
+    }
+  }
+
+  const togglePayment = async (b: Booking) => {
+    const newStatus = b.payment_status === 'paid' ? 'unpaid' : 'paid'
+    const newBookingStatus = newStatus === 'paid' && b.status === 'pending' ? 'confirmed' : b.status
+    try {
+      await pb.collection('bookings').update(b.id, {
+        payment_status: newStatus,
+        status: newBookingStatus,
+      })
+      loadData()
+    } catch (e) {
+      console.error('Failed to update payment:', e)
     }
   }
 
@@ -234,17 +248,25 @@ export default function Bookings() {
                           <span className="text-xs text-gray-600">—</span>
                         )}
                       </td>
-                      <td className="py-3 px-4">
-                        <div className="text-xs">
+                      <td className="py-3 px-2 sm:px-4 hidden sm:table-cell">
+                        <button
+                          onClick={() => togglePayment(b)}
+                          className="text-xs cursor-pointer hover:opacity-80 transition-opacity"
+                          title="Click to toggle paid/unpaid"
+                        >
                           <span className={`px-2 py-0.5 rounded font-bold ${
-                            b.payment_type === 'full' ? 'bg-green-500/20 text-green-400' : 'bg-yellow-500/20 text-yellow-400'
+                            b.payment_status === 'paid' ? 'bg-green-500/20 text-green-400' :
+                            b.payment_status === 'refunded' ? 'bg-yellow-500/20 text-yellow-400' :
+                            'bg-gray-500/20 text-gray-400'
                           }`}>
-                            {b.payment_type === 'full' ? 'Full' : 'Deposit'}
+                            {b.payment_status === 'paid' ? 'Paid' :
+                             b.payment_status === 'refunded' ? 'Refunded' :
+                             b.payment_type === 'deposit' ? 'Dep Unpaid' : 'Unpaid'}
                           </span>
                           {b.balance_due > 0 && (
                             <p className="text-gray-500 mt-1">R{b.balance_due} due</p>
                           )}
-                        </div>
+                        </button>
                       </td>
                       <td className="py-3 px-4">
                         {b.waiver_signed ? (
