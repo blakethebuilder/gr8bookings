@@ -272,11 +272,11 @@ export default function Book() {
       {/* Header */}
       <header className="border-b border-white/10 py-4 px-6">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
-          <a href="/" className="text-xl font-black text-white tracking-tight">
+          <a href="https://gr8.smartintegrate.co.za" className="text-xl font-black text-white tracking-tight">
             THE GR8 <span className="text-gr8-red">ESCAPE</span>
           </a>
-          <a href="/" className="text-sm text-gray-400 hover:text-white transition-colors">
-            Back to site
+          <a href="https://gr8.smartintegrate.co.za" className="text-sm text-gray-400 hover:text-white transition-colors">
+            ← Back to site
           </a>
         </div>
       </header>

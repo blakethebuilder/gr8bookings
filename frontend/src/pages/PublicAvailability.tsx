@@ -66,7 +66,7 @@ export default function PublicAvailability() {
       {/* Header */}
       <header className="border-b border-white/10 py-4 px-6">
         <div className="max-w-6xl mx-auto flex items-center justify-between">
-          <a href="/" className="text-xl font-black text-white tracking-tight">
+          <a href="https://gr8.smartintegrate.co.za" className="text-xl font-black text-white tracking-tight">
             THE GR8 <span className="text-gr8-red">ESCAPE</span>
           </a>
           <a href="/book" className="btn-gr8 text-sm px-5 py-2">Book Now</a>

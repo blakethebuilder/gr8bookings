@@ -63,7 +63,7 @@ export default function BookConfirm() {
           <AlertCircle size={48} className="text-red-400 mx-auto mb-4" />
           <h1 className="text-2xl font-bold text-white mb-2">Booking not found</h1>
           <p className="text-gray-500 mb-6">Reference "{reference}" doesn't match any booking.</p>
-          <Link to="/" className="btn-gr8 px-6 py-3 inline-block">Go Home</Link>
+          <a href="https://gr8.smartintegrate.co.za" className="btn-gr8 px-6 py-3 inline-block">Go to Website</a>
         </div>
       </div>
     )
@@ -122,7 +122,7 @@ export default function BookConfirm() {
     <div className="min-h-screen bg-[#0a0a0a]">
       <header className="border-b border-white/10 py-4 px-6">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
-          <a href="/" className="text-xl font-black text-white tracking-tight">
+          <a href="https://gr8.smartintegrate.co.za" className="text-xl font-black text-white tracking-tight">
             THE GR8 <span className="text-gr8-red">ESCAPE</span>
           </a>
         </div>
@@ -297,9 +297,9 @@ export default function BookConfirm() {
         )}
 
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
-          <Link to="/" className="btn-gr8 px-8 py-3 flex items-center justify-center gap-2">
-            <Home size={18} /> Back to Home
-          </Link>
+          <a href="https://gr8.smartintegrate.co.za" className="btn-gr8 px-8 py-3 flex items-center justify-center gap-2">
+            <Home size={18} /> Back to Site
+          </a>
           <Link to="/book" className="px-8 py-3 rounded-lg border border-gray-700 text-gray-400 hover:text-white hover:border-gray-500 transition-colors flex items-center justify-center gap-2">
             Book Another Room
           </Link>
