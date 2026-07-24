@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from 'react'
-import { Save, Check, Eye, EyeOff, Cog } from 'lucide-react'
+import { Save, Check, Eye, EyeOff, Cog, Trash2, Loader2 } from 'lucide-react'
 import pb from '../lib/pocketbase'
 
 interface Setting {
@@ -41,9 +41,28 @@ export default function Settings() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
+  const [resetting, setResetting] = useState(false)
   const [showSecrets, setShowSecrets] = useState<Record<string, boolean>>({})
   const [collapsedGroups, setCollapsedGroups] = useState<Record<string, boolean>>({})
   const initRef = useRef(false)
+
+  const handleReset = async () => {
+    if (!confirm('This will DELETE all bookings, waivers, game hosts, GM blocks, and time slots. Rooms, staff, and settings will be kept. Fresh time slots will be regenerated. Are you sure?')) return
+    setResetting(true)
+    try {
+      const res = await fetch('/api/reset-demo-data', { method: 'POST' })
+      const data = await res.json()
+      if (data.success) {
+        alert(`Reset complete!\nWiped: ${JSON.stringify(data.wiped)}\nRegenerated: ${data.slotsCreated} time slots`)
+      } else {
+        alert('Reset failed: ' + (data.error || 'Unknown error'))
+      }
+    } catch (e: any) {
+      alert('Reset failed: ' + e.message)
+    } finally {
+      setResetting(false)
+    }
+  }
 
   useEffect(() => {
     async function load() {
@@ -224,6 +243,26 @@ export default function Settings() {
             </div>
           )
         })}
+      </div>
+
+      {/* Reset Demo Data */}
+      <div className="card-dark border-red-500/30 mt-8">
+        <div className="flex items-center gap-3 mb-4">
+          <Trash2 size={18} className="text-red-400" />
+          <h2 className="text-lg font-bold text-white">Reset Demo Data</h2>
+        </div>
+        <p className="text-sm text-gray-400 mb-4">
+          Wipes all bookings, waivers, game hosts, GM blocks, and time slots.
+          Keeps rooms, staff, and settings. Fresh time slots will be regenerated for the next 60 days.
+        </p>
+        <button
+          onClick={handleReset}
+          disabled={resetting}
+          className="px-4 py-2 rounded-lg bg-red-500/20 text-red-400 border border-red-500/30 hover:bg-red-500/30 font-bold text-sm flex items-center gap-2 disabled:opacity-50 transition-colors"
+        >
+          {resetting ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
+          {resetting ? 'Resetting...' : 'Reset All Demo Data'}
+        </button>
       </div>
     </div>
   )

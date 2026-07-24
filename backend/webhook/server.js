@@ -287,6 +287,73 @@ app.post('/api/payfast/sign', (req, res) => {
   }
 })
 
+// ─── Reset Demo Data ───────────────────────────────────────
+// Wipes test data while keeping rooms, staff, and settings
+app.post('/api/reset-demo-data', async (req, res) => {
+  try {
+    const token = await getAdminToken()
+    const headers = { 'Authorization': token, 'Content-Type': 'application/json' }
+
+    const COLLECTIONS_TO_WIPE = ['bookings', 'game_hosts', 'waivers', 'gm_blocks', 'time_slots']
+    const results = {}
+
+    for (const col of COLLECTIONS_TO_WIPE) {
+      // Get all record IDs
+      const list = await fetch(`${PB_URL}/api/collections/${col}/records?perPage=10000`, { headers })
+      const data = await list.json()
+      const ids = (data.items || []).map(r => r.id)
+
+      // Delete each record
+      for (const id of ids) {
+        await fetch(`${PB_URL}/api/collections/${col}/records/${id}`, { method: 'DELETE', headers })
+      }
+      results[col] = ids.length
+    }
+
+    // Regenerate time slots for the next 60 days
+    const roomsList = await fetch(`${PB_URL}/api/collections/rooms/records?filter=(is_active=true)&perPage=100`, { headers })
+    const { items: rooms } = await roomsList.json()
+
+    let slotsCreated = 0
+    const now = new Date()
+    for (let d = 0; d < 60; d++) {
+      const date = new Date(now)
+      date.setDate(date.getDate() + d)
+      const dateStr = date.toISOString().split('T')[0]
+
+      for (const room of rooms) {
+        const duration = room.duration_minutes || 60
+        const buffer = room.reset_buffer_minutes || 15
+        const block = duration + buffer
+        let h = 9, m = 30
+
+        while (h * 60 + m + block <= (date.getDay() === 5 || date.getDay() === 6 ? 20 * 60 : 18 * 60 + 30)) {
+          const endMin = h * 60 + m + duration
+          await fetch(`${PB_URL}/api/collections/time_slots/records`, {
+            method: 'POST', headers,
+            body: JSON.stringify({
+              room: room.id, date: dateStr,
+              start_time: `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`,
+              end_time: `${String(Math.floor(endMin/60)).padStart(2,'0')}:${String(endMin%60).padStart(2,'0')}`,
+              status: 'available',
+            }),
+          })
+          slotsCreated++
+          const next = h * 60 + m + block
+          h = Math.floor(next / 60)
+          m = next % 60
+        }
+      }
+    }
+
+    console.log(`[Reset] Wiped: ${JSON.stringify(results)}, regenerated ${slotsCreated} slots`)
+    res.json({ success: true, wiped: results, slotsCreated })
+  } catch (err) {
+    console.error('[Reset] Error:', err)
+    res.status(500).json({ error: 'Reset failed' })
+  }
+})
+
 // ─── Start Server ──────────────────────────────────────────
 const PORT = process.env.WEBHOOK_PORT || 3001
 
