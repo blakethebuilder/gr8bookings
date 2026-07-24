@@ -2,7 +2,7 @@ const express = require('express')
 const crypto = require('crypto')
 const http = require('http')
 const rateLimit = require('express-rate-limit')
-const { loadSettings, generateSignature, getSetting } = require('./payfast-sign')
+const { generateSignature } = require('./payfast-sign')
 
 const app = express()
 app.use(express.urlencoded({ extended: false }))
@@ -257,7 +257,7 @@ app.post('/api/payfast/sign', (req, res) => {
   try {
     const { merchant_id, return_url, cancel_url, notify_url, name_first, name_last, email_address, m_payment_id, amount, item_name, item_description, custom_str1, custom_str2 } = req.body
 
-    const merchantKey = getSetting('payfast_merchant_key')
+    const merchantKey = getSettingSync('payfast_merchant_key')
     if (!merchant_id || !merchantKey) {
       return res.status(400).json({ error: 'Payfast not configured' })
     }

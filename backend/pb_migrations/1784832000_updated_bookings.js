@@ -2,8 +2,9 @@
 migrate((app) => {
   const collection = app.findCollectionByNameOrId("pbc_986407980")
 
-  // add deposit_amount field (after "notes", before "waiver_signed")
-  collection.fields.addAt(collection.fields.findIndex("notes") + 1, {
+  // add deposit_amount, balance_due, payment_type fields
+  // using fields.add() which appends to the end of the field list
+  collection.fields.add({
     "hidden": false,
     "id": "number9586412357",
     "max": null,
@@ -16,8 +17,7 @@ migrate((app) => {
     "type": "number"
   })
 
-  // add balance_due field
-  collection.fields.addAt(collection.fields.findIndex("notes") + 2, {
+  collection.fields.add({
     "hidden": false,
     "id": "number4857936182",
     "max": null,
@@ -30,8 +30,7 @@ migrate((app) => {
     "type": "number"
   })
 
-  // add payment_type field
-  collection.fields.addAt(collection.fields.findIndex("notes") + 3, {
+  collection.fields.add({
     "hidden": false,
     "id": "select8273645190",
     "maxSelect": 0,
@@ -47,10 +46,22 @@ migrate((app) => {
 }, (app) => {
   const collection = app.findCollectionByNameOrId("pbc_986407980")
 
-  // remove the added fields (reverse order to keep indices valid)
-  collection.fields.remove(collection.fields.findIndex("payment_type"))
-  collection.fields.remove(collection.fields.findIndex("balance_due"))
-  collection.fields.remove(collection.fields.findIndex("deposit_amount"))
+  // Remove the added fields. Field IDs are unique so we can target them directly.
+  // PocketBase's SchemaFieldList.remove() can target by field reference.
+  // We iterate the list to find and remove each field by name.
+  const namesToRemove = ["payment_type", "balance_due", "deposit_amount"]
+  const fields = collection.fields
+  // Use a standard for loop since PocketBase's JS runtime (Goja) supports it
+  const toRemove = []
+  for (var i = 0; i < fields.length; i++) {
+    var f = fields[i]
+    if (namesToRemove.indexOf(f.name) !== -1) {
+      toRemove.push(f)
+    }
+  }
+  for (var j = 0; j < toRemove.length; j++) {
+    fields.remove(toRemove[j])
+  }
 
   return app.save(collection)
 })
