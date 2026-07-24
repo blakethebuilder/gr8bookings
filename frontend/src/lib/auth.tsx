@@ -16,7 +16,7 @@ export interface Staff {
 
 interface AuthContextType {
   staff: Staff | null
-  login: (email: string, pin: string) => Promise<boolean>
+  login: (email: string, pin: string) => Promise<{success: boolean; error?: string}>
   logout: () => void
   isGrandmaster: boolean
   loading: boolean
@@ -24,7 +24,7 @@ interface AuthContextType {
 
 export const AuthContext = createContext<AuthContextType>({
   staff: null,
-  login: async () => false,
+  login: async () => ({ success: false }),
   logout: () => {},
   isGrandmaster: false,
   loading: true,
@@ -50,20 +50,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setLoading(false)
   }, [])
 
-  const login = async (email: string, pin: string): Promise<boolean> => {
+  const login = async (email: string, pin: string): Promise<{success: boolean; error?: string}> => {
     try {
       const result = await pb.collection('staff').getFirstListItem<Staff>(
         `email = "${email}" && is_active = true`
       )
 
-      if (result && result.pin_code === pin) {
-        setStaff(result)
-        localStorage.setItem('gr8_staff', JSON.stringify(result))
-        return true
+      if (!result) {
+        return { success: false, error: 'Staff account not found' }
       }
-      return false
-    } catch {
-      return false
+
+      if (result.pin_code !== pin) {
+        return { success: false, error: 'Invalid PIN' }
+      }
+
+      setStaff(result)
+      localStorage.setItem('gr8_staff', JSON.stringify(result))
+      return { success: true }
+    } catch (err: any) {
+      console.error('[Auth] Login failed:', err)
+      return { success: false, error: err?.message || 'Connection failed — is PocketBase running?' }
     }
   }
 

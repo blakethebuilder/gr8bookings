@@ -16,14 +16,14 @@ export default function Login() {
     setError('')
     setLoading(true)
 
-    const success = await login(email, pin)
-    if (success) {
+    const result = await login(email, pin)
+    if (result.success) {
       // Get staff from localStorage to route by role
       const stored = localStorage.getItem('gr8_staff')
       const staff = stored ? JSON.parse(stored) : null
       navigate(staff?.role === 'grandmaster' ? '/grandmaster' : '/gm')
     } else {
-      setError('Invalid email or PIN code')
+      setError(result.error || 'Invalid email or PIN code')
     }
     setLoading(false)
   }
