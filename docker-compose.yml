@@ -8,14 +8,14 @@ services:
     container_name: gr8escape
     restart: unless-stopped
     ports:
-      - "8090:80"
+      - "8090:8090"
     volumes:
       - pb_data:/pb/pb_data
     environment:
-      - PB_ADMIN_EMAIL=${PB_ADMIN_EMAIL:-admin@gr8escape.co.za}
-      - PB_ADMIN_PASSWORD=${PB_ADMIN_PASSWORD:-admin123456}
+      - PB_ADMIN_EMAIL=${PB_ADMIN_EMAIL:-grandmaster@gr8escape.co.za}
+      - PB_ADMIN_PASSWORD=${PB_ADMIN_PASSWORD:-gr8@2026!}
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:80/"]
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8090/api/health"]
       interval: 30s
       timeout: 10s
       retries: 3
