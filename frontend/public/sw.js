@@ -1,4 +1,4 @@
-const CACHE_NAME = 'gr8escape-v1'
+const CACHE_NAME = 'gr8escape-v3'
 const STATIC_ASSETS = ['/', '/login', '/availability', '/book']
 
 self.addEventListener('install', (event) => {
