@@ -285,7 +285,7 @@ async function seedRooms() {
 
 async function seedStaff() {
   const staff = [
-    { name: 'Niki', email: 'niki@gr8escape.co.za', role: 'grandmaster', avatar_color: '#E53935', is_active: true, pin_code: '1234' },
+    { name: 'Daylin', email: 'daylin@gr8escape.co.za', role: 'grandmaster', avatar_color: '#E53935', is_active: true, pin_code: '2536' },
     { name: 'Thabo', email: 'thabo@gr8escape.co.za', role: 'gamemaster', avatar_color: '#FFB900', is_active: true, pin_code: '5678' },
     { name: 'Zanele', email: 'zanele@gr8escape.co.za', role: 'gamemaster', avatar_color: '#4CAF50', is_active: true, pin_code: '9012' },
     { name: 'Ryan', email: 'ryan@gr8escape.co.za', role: 'gamemaster', avatar_color: '#9C27B0', is_active: true, pin_code: '3456' },

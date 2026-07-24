@@ -43,7 +43,7 @@
 ## Staff Credentials
 | Name | Role | Email | PIN |
 |------|------|-------|-----|
-| Niki | Grandmaster | niki@gr8escape.co.za | 1234 |
+| Daylin | Grandmaster | daylin@gr8escape.co.za | 2536 |
 | Thabo | Game Master | thabo@gr8escape.co.za | 5678 |
 | Zanele | Game Master | zanele@gr8escape.co.za | 9012 |
 | Ryan | Game Master | ryan@gr8escape.co.za | 3456 |
