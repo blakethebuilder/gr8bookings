@@ -79,7 +79,7 @@ export default function StaffManagement() {
     <div>
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-3xl font-black text-white">Staff Management</h1>
+          <h1 className="text-2xl sm:text-3xl font-black text-white">Staff Management</h1>
           <p className="text-gray-500 mt-1">{staffList.length} team members</p>
         </div>
         <button onClick={openAdd} className="btn-gr8 flex items-center gap-2">

@@ -262,7 +262,7 @@ export default function GrandmasterDashboard() {
   return (
     <div>
       <div className="mb-8">
-        <h1 className="text-3xl font-black text-white">
+        <h1 className="text-2xl sm:text-3xl font-black text-white">
           Grandmaster <span className="text-gr8-red">Dashboard</span>
         </h1>
         <p className="text-gray-500 mt-1">
@@ -343,19 +343,19 @@ export default function GrandmasterDashboard() {
       {/* Bookings Overview */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
         <div className="card-dark text-center">
-          <p className="text-3xl font-black text-white">{bookingStats.total}</p>
+          <p className="text-2xl sm:text-3xl font-black text-white">{bookingStats.total}</p>
           <p className="text-xs text-gray-500 uppercase tracking-wider mt-1">Total Bookings</p>
         </div>
         <div className="card-dark text-center">
-          <p className="text-3xl font-black text-green-400">{bookingStats.confirmed}</p>
+          <p className="text-2xl sm:text-3xl font-black text-green-400">{bookingStats.confirmed}</p>
           <p className="text-xs text-gray-500 uppercase tracking-wider mt-1">Confirmed</p>
         </div>
         <div className="card-dark text-center">
-          <p className="text-3xl font-black text-yellow-400">{bookingStats.pending}</p>
+          <p className="text-2xl sm:text-3xl font-black text-yellow-400">{bookingStats.pending}</p>
           <p className="text-xs text-gray-500 uppercase tracking-wider mt-1">Pending</p>
         </div>
         <div className="card-dark text-center">
-          <p className="text-3xl font-black text-red-400">{bookingStats.cancelled}</p>
+          <p className="text-2xl sm:text-3xl font-black text-red-400">{bookingStats.cancelled}</p>
           <p className="text-xs text-gray-500 uppercase tracking-wider mt-1">Cancelled</p>
         </div>
       </div>

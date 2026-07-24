@@ -272,7 +272,7 @@ export default function Waiver() {
         </div>
       </header>
 
-      <div className="max-w-3xl mx-auto px-6 py-8">
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
         {/* Booking info */}
         <div className="bg-[#1e1e1e] border border-gray-700/50 rounded-xl p-4 mb-8 flex items-center gap-4">
           {room && <div className="w-4 h-4 rounded-full flex-shrink-0" style={{ backgroundColor: room.color }} />}
@@ -457,7 +457,7 @@ export default function Waiver() {
         <button
           onClick={handleSubmit}
           disabled={submitting || !hasSignature || !form.consentMedical || !form.consentRules || !form.playerName || !form.playerEmail}
-          className="w-full btn-gr8 py-4 text-lg flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full btn-gr8 py-3 sm:py-4 text-base sm:text-lg flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {submitting ? (
             <><Loader2 size={20} className="animate-spin" /> Submitting...</>

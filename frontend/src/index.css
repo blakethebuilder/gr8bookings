@@ -57,10 +57,90 @@ body {
   gap: 0.5rem;
 }
 
-/* Touch-friendly tap targets */
+/* ─── Mobile / PWA Responsive Fixes ─── */
+
 @media (max-width: 640px) {
-  button, a {
+  /* Compact buttons on mobile */
+  .btn-gr8 {
+    padding: 0.6rem 1.25rem;
+    font-size: 0.875rem;
+    letter-spacing: 0.03em;
+  }
+
+  /* Smaller headings */
+  h1 {
+    font-size: 1.5rem !important;
+  }
+  h2 {
+    font-size: 1.15rem !important;
+  }
+
+  /* Touch-friendly tap targets — only for interactive controls, not icon buttons */
+  button:not(.fc-button):not([class*="p-1"]):not([class*="p-0"]),
+  a.btn-gr8 {
     min-height: 44px;
+  }
+
+  /* Smaller icon buttons stay compact */
+  button[class*="p-1"],
+  button[class*="p-0"] {
+    min-height: unset;
+  }
+
+  /* Reduce card padding on very small screens */
+  .card-dark {
+    padding: 0.75rem;
+  }
+
+  /* Full-width inputs */
+  input:not([type="checkbox"]):not([type="radio"]),
+  select,
+  textarea {
+    font-size: 16px !important; /* prevent iOS zoom on focus */
+  }
+
+  /* Modal fixes — make modals fill screen on mobile */
+  .card-dark[class*="max-w-"] {
+    max-height: 90vh;
+    overflow-y: auto;
+    border-radius: 0.75rem 0.75rem 0 0;
+    margin-top: auto;
+  }
+
+  /* Grid collapse to single column on very small */
+  .grid-cols-2,
+  .grid-cols-3,
+  .grid-cols-4 {
+    gap: 0.5rem;
+  }
+
+  /* Table cell padding reduction */
+  table th, table td {
+    padding-left: 0.5rem !important;
+    padding-right: 0.5rem !important;
+  }
+
+  /* Tighter filter buttons */
+  .filter-wrap button,
+  .flex-wrap.gap-2 button {
+    padding: 0.4rem 0.75rem;
+    font-size: 0.75rem;
+  }
+}
+
+/* Extra small screens (iPhone SE, etc.) */
+@media (max-width: 380px) {
+  .btn-gr8 {
+    padding: 0.5rem 1rem;
+    font-size: 0.8rem;
+  }
+
+  .card-dark {
+    padding: 0.6rem;
+  }
+
+  .grid-cols-2 {
+    grid-template-columns: 1fr;
   }
 }
 

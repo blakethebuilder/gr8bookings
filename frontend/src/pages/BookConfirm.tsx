@@ -128,7 +128,7 @@ export default function BookConfirm() {
         </div>
       </header>
 
-      <div className="max-w-2xl mx-auto px-6 py-16 text-center">
+      <div className="max-w-2xl mx-auto px-6 py-8 sm:py-16 text-center">
         <div className="mb-8">
           {confirming ? (
             <Loader2 size={64} className="text-gr8-gold mx-auto mb-4 animate-spin" />
@@ -140,7 +140,7 @@ export default function BookConfirm() {
             <AlertCircle size={64} className="text-yellow-400 mx-auto mb-4" />
           )}
 
-          <h1 className="text-3xl font-black text-white mb-2">
+          <h1 className="text-2xl sm:text-3xl font-black text-white mb-2">
             {confirming ? 'Confirming Payment...' : booking.status === 'cancelled' ? 'Booking Cancelled' : isConfirmed ? 'Booking Confirmed!' : 'Booking Received'}
           </h1>
           <p className="text-gray-400">

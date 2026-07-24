@@ -75,24 +75,24 @@ export default function GMDashboard() {
   return (
     <div>
       <div className="mb-8">
-        <h1 className="text-3xl font-black text-white">
+        <h1 className="text-2xl sm:text-3xl font-black text-white">
           Welcome, <span className="text-gr8-red">{staff?.name}</span>
         </h1>
         <p className="text-gray-500 mt-1">Game Master Dashboard</p>
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-3 gap-2 sm:gap-4 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-4 mb-8">
         <div className="card-dark text-center">
-          <p className="text-3xl font-black text-gr8-red">{activeGames.length}</p>
+          <p className="text-2xl sm:text-3xl font-black text-gr8-red">{activeGames.length}</p>
           <p className="text-xs text-gray-500 uppercase tracking-wider mt-1">Active Games</p>
         </div>
         <div className="card-dark text-center">
-          <p className="text-3xl font-black text-gr8-gold">{upcomingGames.length}</p>
+          <p className="text-2xl sm:text-3xl font-black text-gr8-gold">{upcomingGames.length}</p>
           <p className="text-xs text-gray-500 uppercase tracking-wider mt-1">Upcoming</p>
         </div>
         <div className="card-dark text-center">
-          <p className="text-3xl font-black text-white">{games.reduce((sum, g) => sum + g.hintsUsed, 0)}</p>
+          <p className="text-2xl sm:text-3xl font-black text-white">{games.reduce((sum, g) => sum + g.hintsUsed, 0)}</p>
           <p className="text-xs text-gray-500 uppercase tracking-wider mt-1">Hints Given</p>
         </div>
       </div>

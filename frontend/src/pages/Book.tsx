@@ -311,14 +311,14 @@ export default function Book() {
       </div>
 
       {/* Content */}
-      <div className="max-w-4xl mx-auto px-6 py-10">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
 
         {/* Step: Choose Room */}
         {step === 'rooms' && (
           <div>
-            <h1 className="text-3xl font-black text-white mb-2">Choose Your Room</h1>
+            <h1 className="text-2xl sm:text-3xl font-black text-white mb-2">Choose Your Room</h1>
             <p className="text-gray-500 mb-8">Pick an escape room for your adventure.</p>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
               {rooms.map(room => (
                 <button
                   key={room.id}
@@ -326,7 +326,7 @@ export default function Book() {
                   className="bg-[#1e1e1e] border border-gray-700/50 rounded-xl overflow-hidden text-left hover:border-gr8-red/50 hover:shadow-lg hover:shadow-red-500/10 transition-all group"
                 >
                   <div
-                    className="h-40 bg-cover bg-center relative"
+                    className="h-28 sm:h-40 bg-cover bg-center relative"
                     style={{ backgroundColor: room.color + '22' }}
                   >
                     <span className="absolute inset-0 flex items-center justify-center text-5xl opacity-30 select-none">
@@ -364,7 +364,7 @@ export default function Book() {
             <button onClick={() => setStep('rooms')} className="text-sm text-gray-500 hover:text-white mb-4 flex items-center gap-1">
               ← Back to rooms
             </button>
-            <h1 className="text-3xl font-black text-white mb-2">Pick a Date</h1>
+            <h1 className="text-2xl sm:text-3xl font-black text-white mb-2">Pick a Date</h1>
             <p className="text-gray-500 mb-8">
               <span className="font-medium" style={{ color: formData.room.color }}>{formData.room.name}</span> — Select a date for your game.
             </p>
@@ -399,7 +399,7 @@ export default function Book() {
             <button onClick={() => setStep('date')} className="text-sm text-gray-500 hover:text-white mb-4 flex items-center gap-1">
               ← Back to dates
             </button>
-            <h1 className="text-3xl font-black text-white mb-2">Pick a Time</h1>
+            <h1 className="text-2xl sm:text-3xl font-black text-white mb-2">Pick a Time</h1>
             <p className="text-gray-500 mb-8">
               <span className="font-medium" style={{ color: formData.room.color }}>{formData.room.name}</span> — {format(formData.date, 'EEEE, MMMM d')}
             </p>
@@ -433,7 +433,7 @@ export default function Book() {
             <button onClick={() => setStep('slot')} className="text-sm text-gray-500 hover:text-white mb-4 flex items-center gap-1">
               ← Back to times
             </button>
-            <h1 className="text-3xl font-black text-white mb-2">Your Details</h1>
+            <h1 className="text-2xl sm:text-3xl font-black text-white mb-2">Your Details</h1>
             <p className="text-gray-500 mb-8">Tell us about your group.</p>
 
             {/* Booking summary */}
@@ -535,7 +535,7 @@ export default function Book() {
             <button onClick={() => setStep('details')} className="text-sm text-gray-500 hover:text-white mb-4 flex items-center gap-1">
               ← Back to details
             </button>
-            <h1 className="text-3xl font-black text-white mb-2">Confirm & Pay</h1>
+            <h1 className="text-2xl sm:text-3xl font-black text-white mb-2">Confirm & Pay</h1>
             <p className="text-gray-500 mb-8">Review your booking and choose payment option.</p>
 
             <div className="max-w-lg">

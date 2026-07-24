@@ -188,7 +188,7 @@ async function createCollections() {
         { name: 'is_active', type: 'bool', required: true },
         { name: 'pin_code', type: 'text' },
       ],
-      listRule: '@request.auth.id != ""',
+      listRule: '',
       viewRule: '',
       createRule: '@request.auth.id != ""',
       updateRule: '@request.auth.id != ""',

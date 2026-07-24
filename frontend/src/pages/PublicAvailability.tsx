@@ -73,10 +73,10 @@ export default function PublicAvailability() {
         </div>
       </header>
 
-      <div className="max-w-6xl mx-auto px-6 py-10">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
         {/* Title */}
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-black text-white mb-2">
+          <h1 className="text-2xl sm:text-4xl font-black text-white mb-2">
             Check <span className="text-gr8-red">Availability</span>
           </h1>
           <p className="text-gray-400">See what's free before you book. Open 7 days — Mon–Thu 9:30–18:30, Fri–Sat 9:30–20:00, Sun 9:30–18:30.</p>
@@ -167,7 +167,7 @@ export default function PublicAvailability() {
 
         {/* CTA */}
         <div className="text-center mt-10">
-          <a href="/book" className="btn-gr8 text-lg px-10 py-4 inline-flex items-center gap-2">
+          <a href="/book" className="btn-gr8 text-base sm:text-lg px-6 sm:px-10 py-3 sm:py-4 inline-flex items-center gap-2">
             <Calendar size={20} /> Book Your Escape
           </a>
         </div>

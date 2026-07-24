@@ -107,7 +107,7 @@ export default function Rooms() {
     <div>
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-3xl font-black text-white">Rooms</h1>
+          <h1 className="text-2xl sm:text-3xl font-black text-white">Rooms</h1>
           <p className="text-gray-500 mt-1">{rooms.length} rooms configured</p>
         </div>
         <button onClick={openAdd} className="btn-gr8 flex items-center gap-2">
@@ -194,7 +194,7 @@ export default function Rooms() {
             </div>
 
             <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 <div>
                   <label className="text-sm text-gray-400 mb-1 block">Name *</label>
                   <input type="text" value={form.name} onChange={e => {
@@ -213,7 +213,7 @@ export default function Rooms() {
                 <textarea value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} rows={2} className="w-full bg-white/5 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-gr8-red resize-none" />
               </div>
 
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
                 <div>
                   <label className="text-sm text-gray-400 mb-1 block">Difficulty (1-10)</label>
                   <input type="number" value={form.difficulty} onChange={e => setForm(f => ({ ...f, difficulty: +e.target.value }))} min={1} max={10} className="w-full bg-white/5 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-gr8-red" />
@@ -228,7 +228,7 @@ export default function Rooms() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
                 <div>
                   <label className="text-sm text-gray-400 mb-1 block">Min Players</label>
                   <input type="number" value={form.min_players} onChange={e => setForm(f => ({ ...f, min_players: +e.target.value }))} min={1} max={20} className="w-full bg-white/5 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-gr8-red" />

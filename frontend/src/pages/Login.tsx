@@ -40,7 +40,7 @@ export default function Login() {
         </div>
 
         {/* Login card */}
-        <div className="bg-[#1e1e1e] border border-gray-700/50 rounded-2xl p-8">
+        <div className="bg-[#1e1e1e] border border-gray-700/50 rounded-2xl p-6 sm:p-8">
           <div className="flex items-center gap-3 mb-6">
             <div className="w-10 h-10 rounded-full bg-gr8-red/20 flex items-center justify-center">
               <Lock size={18} className="text-gr8-red" />

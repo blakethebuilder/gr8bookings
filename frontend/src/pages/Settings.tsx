@@ -131,7 +131,7 @@ export default function Settings() {
     <div>
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-3xl font-black text-white">Settings</h1>
+          <h1 className="text-2xl sm:text-3xl font-black text-white">Settings</h1>
           <p className="text-gray-500 mt-1">Configure your booking system</p>
         </div>
         <button

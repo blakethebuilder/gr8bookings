@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import FullCalendar from '@fullcalendar/react'
 import dayGridPlugin from '@fullcalendar/daygrid'
 import timeGridPlugin from '@fullcalendar/timegrid'
@@ -39,6 +39,15 @@ export default function GameMaster() {
   const [showQuickBook, setShowQuickBook] = useState(false)
   const [selectedSlot, setSelectedSlot] = useState<{ start: Date; end: Date; room?: string } | null>(null)
   const [realtimeConnected, setRealtimeConnected] = useState(false)
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768)
+  const calendarRef = useRef<FullCalendar>(null)
+
+  // Detect mobile viewport
+  useEffect(() => {
+    const onResize = () => setIsMobile(window.innerWidth < 768)
+    window.addEventListener('resize', onResize)
+    return () => window.removeEventListener('resize', onResize)
+  }, [])
 
   const loadCalendarData = useCallback(async () => {
     try {
@@ -175,48 +184,54 @@ export default function GameMaster() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-4 sm:mb-6">
         <div>
-          <h1 className="text-3xl font-black text-white">Game Master HQ</h1>
-          <p className="text-gray-500 mt-1">Live booking calendar</p>
+          <h1 className="text-xl sm:text-3xl font-black text-white">Game Master HQ</h1>
+          <p className="text-gray-500 mt-1 text-xs sm:text-sm">Live booking calendar</p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3">
           {/* Realtime indicator */}
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 text-xs">
-            <Zap size={12} className={realtimeConnected ? 'text-green-400' : 'text-gray-600'} />
-            <span className={realtimeConnected ? 'text-green-400' : 'text-gray-600'}>
+          <div className="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full bg-white/5 text-[10px] sm:text-xs">
+            <Zap size={isMobile ? 10 : 12} className={realtimeConnected ? 'text-green-400' : 'text-gray-600'} />
+            <span className={realtimeConnected ? 'text-green-400 hidden sm:inline' : 'text-gray-600 hidden sm:inline'}>
               {realtimeConnected ? 'Live' : 'Disconnected'}
             </span>
           </div>
           <button
             onClick={() => loadCalendarData()}
-            className="p-2 rounded-lg bg-white/5 text-gray-400 hover:text-white hover:bg-white/10 transition-colors"
+            className="p-1.5 sm:p-2 rounded-lg bg-white/5 text-gray-400 hover:text-white hover:bg-white/10 transition-colors"
           >
-            <RefreshCw size={16} />
+            <RefreshCw size={isMobile ? 14 : 16} />
           </button>
         </div>
       </div>
 
-      {/* Room color legend */}
-      <div className="flex flex-wrap gap-3 mb-4">
+      {/* Room color legend — compact on mobile */}
+      <div className="flex flex-wrap gap-1.5 sm:gap-3 mb-3 sm:mb-4">
         {rooms.map(room => (
-          <div key={room.id} className="flex items-center gap-2 text-xs text-gray-400">
-            <span className="w-3 h-3 rounded-full" style={{ backgroundColor: room.color }} />
-            {room.name}
+          <div key={room.id} className="flex items-center gap-1 sm:gap-2 text-[10px] sm:text-xs text-gray-400">
+            <span className="w-2 h-2 sm:w-3 sm:h-3 rounded-full" style={{ backgroundColor: room.color }} />
+            <span className="hidden sm:inline">{room.name}</span>
+            <span className="sm:hidden">{room.name.split(' ').pop()}</span>
           </div>
         ))}
-        <div className="flex items-center gap-2 text-xs text-gray-400">
-          <span className="w-3 h-3 rounded-full bg-gray-500" />
-          GM Block
+        <div className="flex items-center gap-1 sm:gap-2 text-[10px] sm:text-xs text-gray-400">
+          <span className="w-2 h-2 sm:w-3 sm:h-3 rounded-full bg-gray-500" />
+          <span className="hidden sm:inline">GM Block</span>
         </div>
       </div>
 
       {/* FullCalendar */}
-      <div className="card-dark p-4 calendar-wrapper">
+      <div className="card-dark p-2 sm:p-4 calendar-wrapper">
         <FullCalendar
+          ref={calendarRef}
           plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
-          initialView="timeGridWeek"
-          headerToolbar={{
+          initialView={isMobile ? 'timeGridDay' : 'timeGridWeek'}
+          headerToolbar={isMobile ? {
+            left: 'prev',
+            center: 'title',
+            right: 'next',
+          } : {
             left: 'prev,next today',
             center: 'title',
             right: 'timeGridWeek,timeGridDay',
@@ -228,11 +243,12 @@ export default function GameMaster() {
           weekends={true}
           selectable={true}
           selectMirror={true}
-          dayMaxEvents={3}
+          dayMaxEvents={isMobile ? 1 : 3}
           events={events}
           select={handleDateSelect}
           eventClick={handleEventClick}
-          height="calc(100vh - 280px)"
+          height={isMobile ? 'auto' : 'calc(100vh - 280px)'}
+          contentHeight={isMobile ? 500 : undefined}
           eventDisplay="block"
           nowIndicator={true}
         />
@@ -457,5 +473,40 @@ export default function GameMaster() {
   }
   .calendar-wrapper .fc .fc-timegrid-body {
     min-height: 400px;
+  }
+
+  /* Mobile calendar adjustments */
+  @media (max-width: 767px) {
+    .calendar-wrapper .fc .fc-toolbar {
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .calendar-wrapper .fc .fc-toolbar-title {
+      font-size: 0.9rem !important;
+    }
+    .calendar-wrapper .fc .fc-button {
+      font-size: 0.7rem !important;
+      padding: 4px 8px !important;
+    }
+    .calendar-wrapper .fc .fc-timegrid-slot {
+      height: 1.5rem !important;
+    }
+    .calendar-wrapper .fc .fc-timegrid-slot-label {
+      font-size: 0.65rem !important;
+    }
+    .calendar-wrapper .fc .fc-col-header-cell {
+      font-size: 0.7rem !important;
+      padding: 4px 0 !important;
+    }
+    .calendar-wrapper .fc .fc-event {
+      font-size: 0.65rem !important;
+      padding: 1px 4px !important;
+    }
+    .calendar-wrapper .fc .fc-timegrid-body {
+      min-height: 300px;
+    }
+    .calendar-wrapper .fc .fc-timegrid-now-indicator-arrow {
+      display: none;
+    }
   }
 `}</style>

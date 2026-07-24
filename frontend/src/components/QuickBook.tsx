@@ -118,7 +118,7 @@ export default function QuickBook({ rooms, slot, onClose, onComplete }: Props) {
             </select>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="text-sm text-gray-400 mb-1 block">Name *</label>
               <input type="text" value={customerName} onChange={e => setCustomerName(e.target.value)}
@@ -131,7 +131,7 @@ export default function QuickBook({ rooms, slot, onClose, onComplete }: Props) {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="text-sm text-gray-400 mb-1 block">Phone</label>
               <input type="tel" value={customerPhone} onChange={e => setCustomerPhone(e.target.value)}
@@ -141,10 +141,10 @@ export default function QuickBook({ rooms, slot, onClose, onComplete }: Props) {
               <label className="text-sm text-gray-400 mb-1 block">Players</label>
               <div className="flex items-center gap-2">
                 <button onClick={() => setPlayerCount(Math.max(1, playerCount - 1))}
-                  className="w-8 h-8 rounded bg-white/5 border border-gray-700 text-white font-bold text-sm">−</button>
+                  className="w-10 h-10 rounded bg-white/5 border border-gray-700 text-white font-bold text-sm">−</button>
                 <span className="text-white font-bold w-6 text-center">{playerCount}</span>
                 <button onClick={() => setPlayerCount(Math.min(room?.max_players || 8, playerCount + 1))}
-                  className="w-8 h-8 rounded bg-white/5 border border-gray-700 text-white font-bold text-sm">+</button>
+                  className="w-10 h-10 rounded bg-white/5 border border-gray-700 text-white font-bold text-sm">+</button>
               </div>
             </div>
           </div>
