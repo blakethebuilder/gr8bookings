@@ -42,7 +42,8 @@ RUN chmod +x /app/backend/seed.sh
 COPY backend/webhook/server.js /app/webhook/server.js
 COPY backend/webhook/payfast-sign.js /app/webhook/payfast-sign.js
 COPY backend/webhook/package.json /app/webhook/package.json
-RUN cd /app/webhook && npm ci --only=production
+COPY backend/webhook/package-lock.json /app/webhook/package-lock.json
+RUN cd /app/webhook && npm ci --omit=dev
 
 # Startup script
 RUN printf '#!/bin/sh\n\
