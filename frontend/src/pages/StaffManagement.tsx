@@ -2,8 +2,10 @@ import { useEffect, useState } from 'react'
 import { Users, Plus, X, Loader2, Shield, ShieldOff, Mail, Phone, Key, Eye, EyeOff } from 'lucide-react'
 import pb from '../lib/pocketbase'
 import type { Staff } from '../lib/auth'
+import { useBranding } from '../lib/branding'
 
 export default function StaffManagement() {
+  const { branding } = useBranding()
   const [staffList, setStaffList] = useState<Staff[]>([])
   const [loading, setLoading] = useState(true)
   const [showModal, setShowModal] = useState(false)
@@ -124,7 +126,7 @@ export default function StaffManagement() {
                         ? 'bg-gr8-red/20 text-gr8-red'
                         : 'bg-gr8-gold/20 text-gr8-gold'
                     }`}>
-                      {s.role === 'grandmaster' ? 'Grandmaster' : 'Game Master'}
+                      {s.role === 'grandmaster' ? branding.staff_role_admin : branding.staff_role_worker}
                     </span>
                   </td>
                   <td className="py-3 px-4 font-mono text-xs text-gray-500">
@@ -226,8 +228,8 @@ export default function StaffManagement() {
                   onChange={e => setForm(f => ({ ...f, role: e.target.value as Staff['role'] }))}
                   className="w-full bg-white/5 border border-gray-700 rounded-lg px-4 py-2.5 text-white text-sm focus:outline-none focus:border-gr8-red transition-colors"
                 >
-                  <option value="gamemaster">Game Master</option>
-                  <option value="grandmaster">Grandmaster</option>
+                  <option value="gamemaster">{branding.staff_role_worker}</option>
+                  <option value="grandmaster">{branding.staff_role_admin}</option>
                 </select>
               </div>
 

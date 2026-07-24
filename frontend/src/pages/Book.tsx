@@ -5,6 +5,7 @@ import { format, addDays, isSameDay, parseISO } from 'date-fns'
 import pb, { type Room, type TimeSlot } from '../lib/pocketbase'
 import { md5 } from '../lib/md5'
 import { useToast } from '../lib/toast'
+import { useBranding } from '../lib/branding'
 
 type Step = 'rooms' | 'date' | 'slot' | 'details' | 'payment' | 'confirm'
 
@@ -40,6 +41,7 @@ const roomEmoji = (slug: string): string => {
 }
 
 export default function Book() {
+  const { branding } = useBranding()
   const { toast } = useToast()
   const [searchParams] = useSearchParams()
   const [step, setStep] = useState<Step>('rooms')
@@ -208,7 +210,7 @@ export default function Book() {
           ['email_address', formData.playerEmail],
           ['m_payment_id', reference],
           ['amount', amountToPay.toFixed(2)],
-          ['item_name', `Escape Room - ${formData.room.name}`],
+          ['item_name', `${branding.resource_label} - ${formData.room.name}`],
           ['item_description', `Booking ${reference} - ${formData.playerCount} players`],
           ['custom_str1', booking.id],
           ['custom_str2', reference],
@@ -273,7 +275,7 @@ export default function Book() {
       <header className="border-b border-white/10 py-4 px-6">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
           <a href="https://gr8.smartintegrate.co.za" className="text-xl font-black text-white tracking-tight">
-            THE GR8 <span className="text-gr8-red">ESCAPE</span>
+            {branding.business_name}
           </a>
           <a href="https://gr8.smartintegrate.co.za" className="text-sm text-gray-400 hover:text-white transition-colors">
             ← Back to site
@@ -316,7 +318,7 @@ export default function Book() {
         {/* Step: Choose Room */}
         {step === 'rooms' && (
           <div>
-            <h1 className="text-2xl sm:text-3xl font-black text-white mb-2">Choose Your Room</h1>
+            <h1 className="text-2xl sm:text-3xl font-black text-white mb-2">Choose Your {branding.resource_label}</h1>
             <p className="text-gray-500 mb-8">Pick an escape room for your adventure.</p>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
               {rooms.map(room => (
@@ -335,7 +337,7 @@ export default function Book() {
                     <div className="absolute inset-0 bg-gradient-to-t from-[#1e1e1e] to-transparent" />
                     <div className="absolute bottom-3 left-3 flex items-center gap-2">
                       <div className="w-3 h-3 rounded-full" style={{ backgroundColor: room.color }} />
-                      {room.difficulty && (
+                      {branding.show_difficulty && room.difficulty && (
                         <span className="text-[10px] font-bold text-white bg-black/50 px-2 py-0.5 rounded-full">
                           {room.difficulty}/10
                         </span>
@@ -343,13 +345,16 @@ export default function Book() {
                     </div>
                   </div>
                   <div className="p-4">
-                    <h3 className="text-lg font-bold text-white mb-1 group-hover:text-gr8-red transition-colors">
+                    <h3 className="text-lg font-bold text-white mb-1 transition-colors">
                       {room.name}
                     </h3>
                     <p className="text-sm text-gray-400 mb-3 line-clamp-2">{room.description}</p>
                     <div className="flex items-center justify-between text-xs">
-                      <span className="text-gray-500">{room.duration_minutes}min • {room.min_players}-{room.max_players} players</span>
-                      <span className="text-gr8-gold font-bold">R{room.price_per_player}/pp</span>
+                      <span className="text-gray-500">
+                        {room.duration_minutes}min
+                        {branding.show_player_count ? ` • ${room.min_players}-${room.max_players} players` : ''}
+                      </span>
+                      <span className="text-gr8-gold font-bold">R{room.price_per_player}{branding.pricing_model === 'per_person' ? '/pp' : ''}</span>
                     </div>
                   </div>
                 </button>
@@ -362,7 +367,7 @@ export default function Book() {
         {step === 'date' && formData.room && (
           <div>
             <button onClick={() => setStep('rooms')} className="text-sm text-gray-500 hover:text-white mb-4 flex items-center gap-1">
-              ← Back to rooms
+              ← Back to {branding.resource_label_plural.toLowerCase()}
             </button>
             <h1 className="text-2xl sm:text-3xl font-black text-white mb-2">Pick a Date</h1>
             <p className="text-gray-500 mb-8">
@@ -483,6 +488,7 @@ export default function Book() {
                   placeholder="076 362 0765"
                 />
               </div>
+              {branding.show_player_count && (
               <div>
                 <label className="text-sm text-gray-400 mb-1 block">Number of Players</label>
                 <div className="flex items-center gap-4">
@@ -502,6 +508,7 @@ export default function Book() {
                 </div>
                 <p className="text-xs text-gray-600 mt-1">{formData.room.min_players}–{formData.room.max_players} players allowed</p>
               </div>
+              )}
 
               {/* Price summary */}
               <div className="bg-[#1e1e1e] border border-gray-700/50 rounded-xl p-4">
@@ -522,7 +529,7 @@ export default function Book() {
                 disabled={!formData.playerName || !formData.playerEmail}
                 className="w-full btn-gr8 py-4 text-lg flex items-center justify-center gap-2"
               >
-                Continue to Payment
+                {branding.booking_verb}
                 <ChevronRight size={20} />
               </button>
             </div>
@@ -554,10 +561,12 @@ export default function Book() {
                     <span>Time</span>
                     <span className="text-white">{formData.slot.start_time} — {formData.slot.end_time}</span>
                   </div>
+                  {branding.show_player_count && (
                   <div className="flex justify-between text-gray-400">
                     <span>Players</span>
                     <span className="text-white">{formData.playerCount} × R{formData.room.price_per_player}</span>
                   </div>
+                  )}
                   <div className="flex justify-between text-gray-400">
                     <span>Name</span>
                     <span className="text-white">{formData.playerName}</span>

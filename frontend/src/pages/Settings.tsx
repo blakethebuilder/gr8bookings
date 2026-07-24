@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from 'react'
 import { Save, Check, Eye, EyeOff, Cog, Trash2, Loader2 } from 'lucide-react'
 import pb from '../lib/pocketbase'
+import { useBranding, type BusinessType } from '../lib/branding'
 
 interface Setting {
   id: string
@@ -32,11 +33,26 @@ const SETTING_LABELS: Record<string, { label: string; hint?: string }> = {
   reminder_hours_before: { label: 'Reminder Hours', hint: 'Hours before game to send reminder' },
   waiver_enabled: { label: 'Enable Waivers', hint: 'true or false' },
   waiver_hours_before: { label: 'Waiver Reminder Hours', hint: 'Hours before game to send waiver link' },
+  // Branding fields
+  business_type: { label: 'Business Type', hint: 'escape_room, medical, salon, restaurant, or custom' },
+  resource_label: { label: 'Resource Label (Singular)', hint: 'e.g. Room, Doctor, Stylist, Table' },
+  resource_label_plural: { label: 'Resource Label (Plural)', hint: 'e.g. Rooms, Doctors, Stylists, Tables' },
+  staff_role_admin: { label: 'Admin Role Name', hint: 'e.g. Grandmaster, Admin, Manager' },
+  staff_role_worker: { label: 'Worker Role Name', hint: 'e.g. Game Master, Doctor, Stylist, Host' },
+  booking_verb: { label: 'Booking Verb', hint: 'e.g. Book Now, Book Appointment, Reserve Table' },
+  pricing_model: { label: 'Pricing Model', hint: 'per_person, per_slot, or flat' },
+  primary_color: { label: 'Primary Color', hint: 'Hex color code, e.g. #E53935' },
+  duration_unit: { label: 'Duration Unit', hint: 'minutes or slots' },
+  show_difficulty: { label: 'Show Difficulty', hint: 'true or false' },
+  show_player_count: { label: 'Show Player Count', hint: 'true or false' },
+  logo_url: { label: 'Logo URL', hint: 'URL to your logo image' },
+  customer_fields: { label: 'Customer Fields', hint: 'Comma-separated list of fields to collect' },
 }
 
 const GROUP_ORDER = ['General', 'Payfast', 'WhatsApp', 'Evolution API']
 
 export default function Settings() {
+  const { branding } = useBranding()
   const [settings, setSettings] = useState<Setting[]>([])
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -214,25 +230,43 @@ export default function Settings() {
                         <label className="text-sm text-gray-400 font-medium">
                           {meta?.label || s.description || s.key}
                         </label>
-                        <div className="relative">
-                          <input
-                            type={isPassword ? 'password' : 'text'}
+                        {s.key === 'business_type' ? (
+                          <select
                             value={s.value}
-                            onChange={e => updateSetting(s.id, e.target.value)}
-                            className="w-full bg-white/5 border border-gray-700 rounded-lg px-4 py-2.5 pr-10 text-white text-sm focus:outline-none focus:border-gr8-red transition-colors"
-                            placeholder={meta?.hint || s.key}
-                          />
-                          {isSecret && (
-                            <button
-                              type="button"
-                              onClick={() => setShowSecrets(prev => ({ ...prev, [s.key]: !prev[s.key] }))}
-                              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white transition-colors"
-                            >
-                              {showSecrets[s.key] ? <EyeOff size={16} /> : <Eye size={16} />}
-                            </button>
-                          )}
-                        </div>
-                        {meta?.hint && !isSecret && (
+                            onChange={async (e) => {
+                              updateSetting(s.id, e.target.value)
+                              await pb.collection('settings').update(s.id, { value: e.target.value })
+                              window.location.reload()
+                            }}
+                            className="w-full bg-white/5 border border-gray-700 rounded-lg px-4 py-2.5 text-white text-sm focus:outline-none focus:border-gr8-red transition-colors"
+                          >
+                            <option value="escape_room">Escape Room</option>
+                            <option value="medical">Medical</option>
+                            <option value="salon">Salon</option>
+                            <option value="restaurant">Restaurant</option>
+                            <option value="custom">Custom</option>
+                          </select>
+                        ) : (
+                          <div className="relative">
+                            <input
+                              type={isPassword ? 'password' : 'text'}
+                              value={s.value}
+                              onChange={e => updateSetting(s.id, e.target.value)}
+                              className="w-full bg-white/5 border border-gray-700 rounded-lg px-4 py-2.5 pr-10 text-white text-sm focus:outline-none focus:border-gr8-red transition-colors"
+                              placeholder={meta?.hint || s.key}
+                            />
+                            {isSecret && (
+                              <button
+                                type="button"
+                                onClick={() => setShowSecrets(prev => ({ ...prev, [s.key]: !prev[s.key] }))}
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white transition-colors"
+                              >
+                                {showSecrets[s.key] ? <EyeOff size={16} /> : <Eye size={16} />}
+                              </button>
+                            )}
+                          </div>
+                        )}
+                        {meta?.hint && !isSecret && s.key !== 'business_type' && (
                           <p className="text-xs text-gray-600">{meta.hint}</p>
                         )}
                       </div>

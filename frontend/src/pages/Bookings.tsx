@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { UserPlus, Loader2, Copy, Check, ExternalLink, Download, CreditCard } from 'lucide-react'
 import { format } from 'date-fns'
 import pb, { type Booking, type Room, type TimeSlot } from '../lib/pocketbase'
+import { useBranding } from '../lib/branding'
 import AssignGM from '../components/AssignGM'
 
 interface HostInfo {
@@ -11,6 +12,7 @@ interface HostInfo {
 }
 
 export default function Bookings() {
+  const { branding } = useBranding()
   const [bookings, setBookings] = useState<Booking[]>([])
   const [rooms, setRooms] = useState<Record<string, Room>>({})
   const [slots, setSlots] = useState<Record<string, TimeSlot>>({})
@@ -183,9 +185,9 @@ export default function Bookings() {
                 <tr className="border-b border-gray-700/50">
                   <th className="text-left py-3 px-2 sm:px-4 text-gray-500 font-medium">Ref</th>
                   <th className="text-left py-3 px-2 sm:px-4 text-gray-500 font-medium">Customer</th>
-                  <th className="text-left py-3 px-4 text-gray-500 font-medium hidden sm:table-cell">Room</th>
+                  <th className="text-left py-3 px-4 text-gray-500 font-medium hidden sm:table-cell">{branding.resource_label}</th>
                   <th className="text-left py-3 px-2 sm:px-4 text-gray-500 font-medium">Date</th>
-                  <th className="text-left py-3 px-4 text-gray-500 font-medium hidden sm:table-cell">Players</th>
+                  {branding.show_player_count && <th className="text-left py-3 px-4 text-gray-500 font-medium hidden sm:table-cell">Players</th>}
                   <th className="text-left py-3 px-2 sm:px-4 text-gray-500 font-medium">Total</th>
                   <th className="text-left py-3 px-2 sm:px-4 text-gray-500 font-medium">Status</th>
                   <th className="text-left py-3 px-4 text-gray-500 font-medium hidden sm:table-cell">GM</th>
@@ -216,7 +218,7 @@ export default function Bookings() {
                       <td className="py-3 px-2 sm:px-4 text-gray-400 text-xs">
                         {ts ? `${format(new Date(ts.date), 'MMM d')} ${ts.start_time}` : '—'}
                       </td>
-                      <td className="py-3 px-4 text-gray-400 text-center hidden sm:table-cell">{b.player_count}</td>
+                      {branding.show_player_count && <td className="py-3 px-4 text-gray-400 text-center hidden sm:table-cell">{b.player_count}</td>}
                       <td className="py-3 px-2 sm:px-4 text-gray-400 text-sm">R{b.total_amount}</td>
                       <td className="py-3 px-2 sm:px-4">
                         <span className={`px-2 py-1 rounded-full text-xs font-bold ${

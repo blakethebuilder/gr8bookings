@@ -2,11 +2,13 @@ import { useEffect, useState } from 'react'
 import { Plus, Trash2, Edit, X, Loader2, ToggleLeft, ToggleRight } from 'lucide-react'
 import pb, { type Room } from '../lib/pocketbase'
 import { useToast } from '../lib/toast'
+import { useBranding } from '../lib/branding'
 
 const COLORS = ['#E53935', '#FFB900', '#4CAF50', '#9C27B0', '#FF9800', '#E040FB', '#06B6D4', '#F43F5E']
 
 export default function Rooms() {
   const { toast, confirm } = useToast()
+  const { branding } = useBranding()
   const [rooms, setRooms] = useState<Room[]>([])
   const [loading, setLoading] = useState(true)
   const [showModal, setShowModal] = useState(false)
@@ -107,11 +109,11 @@ export default function Rooms() {
     <div>
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-black text-white">Rooms</h1>
-          <p className="text-gray-500 mt-1">{rooms.length} rooms configured</p>
+          <h1 className="text-2xl sm:text-3xl font-black text-white">{branding.resource_label_plural}</h1>
+          <p className="text-gray-500 mt-1">{rooms.length} {branding.resource_label_plural.toLowerCase()} configured</p>
         </div>
         <button onClick={openAdd} className="btn-gr8 flex items-center gap-2">
-          <Plus size={16} /> Add Room
+          <Plus size={16} /> Add {branding.resource_label}
         </button>
       </div>
 
@@ -148,17 +150,19 @@ export default function Rooms() {
                 <p className="text-gr8-red font-bold text-sm">{room.duration_minutes}min</p>
                 <p className="text-[10px] text-gray-500 uppercase">Duration</p>
               </div>
-              <div className="bg-white/5 rounded p-2">
-                <p className="text-gr8-gold font-bold text-sm">{room.min_players}-{room.max_players}</p>
-                <p className="text-[10px] text-gray-500 uppercase">Players</p>
-              </div>
+              {branding.show_player_count && (
+                <div className="bg-white/5 rounded p-2">
+                  <p className="text-gr8-gold font-bold text-sm">{room.min_players}-{room.max_players}</p>
+                  <p className="text-[10px] text-gray-500 uppercase">Players</p>
+                </div>
+              )}
               <div className="bg-white/5 rounded p-2">
                 <p className="text-green-400 font-bold text-sm">R{room.price_per_player}</p>
-                <p className="text-[10px] text-gray-500 uppercase">Per person</p>
+                <p className="text-[10px] text-gray-500 uppercase">Per {branding.pricing_model === 'per_person' ? 'person' : branding.resource_label.toLowerCase()}</p>
               </div>
             </div>
 
-            {room.difficulty && (
+            {branding.show_difficulty && room.difficulty && (
               <div className="flex items-center gap-2 mb-3">
                 <span className="text-[10px] font-bold text-gray-500 uppercase">Difficulty</span>
                 <div className="flex-1 bg-white/10 rounded-full h-1.5">
@@ -180,7 +184,7 @@ export default function Rooms() {
         {/* Add room card */}
         <button onClick={openAdd} className="card-dark border-dashed border-gray-700 hover:border-gr8-red/50 flex flex-col items-center justify-center min-h-[200px] text-gray-500 hover:text-gr8-red transition-colors">
           <Plus size={32} className="mb-2" />
-          <span className="text-sm font-medium">Add Room</span>
+          <span className="text-sm font-medium">Add {branding.resource_label}</span>
         </button>
       </div>
 
@@ -189,7 +193,7 @@ export default function Rooms() {
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="card-dark w-full max-w-lg max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-lg font-bold text-white">{editingRoom ? 'Edit Room' : 'Add Room'}</h2>
+              <h2 className="text-lg font-bold text-white">{editingRoom ? `Edit ${branding.resource_label}` : `Add ${branding.resource_label}`}</h2>
               <button onClick={() => setShowModal(false)} className="text-gray-500 hover:text-white"><X size={18} /></button>
             </div>
 
@@ -264,7 +268,7 @@ export default function Rooms() {
               <button onClick={() => setShowModal(false)} className="flex-1 px-4 py-2 rounded-lg bg-white/5 text-gray-400 hover:text-white text-sm">Cancel</button>
               <button onClick={handleSave} disabled={saving || !form.name || !form.slug} className="flex-1 btn-gr8 py-2 text-sm flex items-center justify-center gap-2 disabled:opacity-50">
                 {saving ? <Loader2 size={14} className="animate-spin" /> : null}
-                {saving ? 'Saving...' : editingRoom ? 'Update Room' : 'Add Room'}
+                {saving ? 'Saving...' : editingRoom ? `Update ${branding.resource_label}` : `Add ${branding.resource_label}`}
               </button>
             </div>
           </div>

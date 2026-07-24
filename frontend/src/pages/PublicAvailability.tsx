@@ -2,8 +2,10 @@ import { useEffect, useState } from 'react'
 import { Calendar, Loader2, ChevronLeft, ChevronRight } from 'lucide-react'
 import { format, addDays, isSameDay } from 'date-fns'
 import pb, { type Room, type TimeSlot } from '../lib/pocketbase'
+import { useBranding } from '../lib/branding'
 
 export default function PublicAvailability() {
+  const { branding } = useBranding()
   const [rooms, setRooms] = useState<Room[]>([])
   const [slots, setSlots] = useState<TimeSlot[]>([])
   const [loading, setLoading] = useState(true)
@@ -67,9 +69,9 @@ export default function PublicAvailability() {
       <header className="border-b border-white/10 py-4 px-6">
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           <a href="https://gr8.smartintegrate.co.za" className="text-xl font-black text-white tracking-tight">
-            THE GR8 <span className="text-gr8-red">ESCAPE</span>
+            {branding.business_name}
           </a>
-          <a href="/book" className="btn-gr8 text-sm px-5 py-2">Book Now</a>
+          <a href="/book" className="btn-gr8 text-sm px-5 py-2">{branding.booking_verb}</a>
         </div>
       </header>
 
@@ -142,7 +144,7 @@ export default function PublicAvailability() {
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-4 h-4 rounded-full" style={{ backgroundColor: room.color }} />
                 <h3 className="text-lg font-bold text-white">{room.name}</h3>
-                <span className="text-xs text-gray-500">R{room.price_per_player}/pp • {room.duration_minutes}min</span>
+                <span className="text-xs text-gray-500">R{room.price_per_player}{branding.pricing_model === 'per_person' ? '/pp' : ''} • {room.duration_minutes}min</span>
               </div>
 
               {roomSlots.length === 0 ? (

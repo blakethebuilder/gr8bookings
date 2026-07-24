@@ -5,7 +5,7 @@ export default {
     extend: {
       colors: {
         gr8: {
-          red: '#E53935',
+          red: 'rgb(var(--gr8-red) / <alpha-value>)',
           gold: '#FFB900',
           dark: '#0d0d0d',
           card: '#1e1e1e',

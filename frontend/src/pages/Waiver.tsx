@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom'
 import { AlertCircle, CheckCircle, Shield, Loader2, Info } from 'lucide-react'
 import { format } from 'date-fns'
 import pb, { type Booking, type Room, type TimeSlot } from '../lib/pocketbase'
+import { useBranding } from '../lib/branding'
 
 interface WaiverForm {
   playerName: string
@@ -17,6 +18,7 @@ interface WaiverForm {
 }
 
 export default function Waiver() {
+  const { branding } = useBranding()
   const { id } = useParams()
   const [booking, setBooking] = useState<Booking | null>(null)
   const [room, setRoom] = useState<Room | null>(null)
@@ -267,7 +269,7 @@ export default function Waiver() {
           <Shield size={24} className="text-gr8-red" />
           <div>
             <h1 className="text-lg font-bold text-white">Player Indemnity Waiver</h1>
-            <p className="text-xs text-gray-500">The Gr8 Escape — Fourways, Johannesburg</p>
+            <p className="text-xs text-gray-500">{branding.business_name} — Fourways, Johannesburg</p>
           </div>
         </div>
       </header>
@@ -293,16 +295,16 @@ export default function Waiver() {
           <h2 className="text-xl font-bold text-white mb-4">Assumption of Risk & Indemnity</h2>
           <div className="space-y-4 text-sm text-gray-300 leading-relaxed">
             <p>
-              I, the undersigned participant, acknowledge that escape room activities involve physical and mental challenges, and I voluntarily assume all risks associated with participation in escape room games at <strong className="text-white">The Gr8 Escape</strong>.
+              I, the undersigned participant, acknowledge that escape room activities involve physical and mental challenges, and I voluntarily assume all risks associated with participation in escape room games at <strong className="text-white">{branding.business_name}</strong>.
             </p>
             <p>
               I understand that escape rooms may involve confined spaces, low lighting, physical exertion, and mentally stimulating puzzles. I confirm that I am physically and mentally capable of participating.
             </p>
             <p>
-              I agree to follow all rules and instructions provided by the Game Master, including but not limited to: no use of excessive force, no cell phones or recording devices, and no food or drinks in the game rooms.
+              I agree to follow all rules and instructions provided by the {branding.staff_role_worker}, including but not limited to: no use of excessive force, no cell phones or recording devices, and no food or drinks in the game rooms.
             </p>
             <p>
-              I hereby release, waive, discharge, and covenant not to sue The Gr8 Escape, its owners, employees, and agents from any and all liability, claims, demands, actions, and rights of action arising out of or related to any loss, damage, or injury that may be sustained by me during participation.
+              I hereby release, waive, discharge, and covenant not to sue {branding.business_name}, its owners, employees, and agents from any and all liability, claims, demands, actions, and rights of action arising out of or related to any loss, damage, or injury that may be sustained by me during participation.
             </p>
             <p>
               I understand that photographs or videos may be taken during the experience and grant permission for such media to be used for promotional purposes, unless I indicate otherwise below.
@@ -393,7 +395,7 @@ export default function Waiver() {
                 className="w-4 h-4 mt-0.5 rounded border-gray-600 bg-white/5 text-gr8-red focus:ring-gr8-red"
               />
               <span className="text-sm text-gray-300 group-hover:text-white transition-colors">
-                <strong className="text-white">Medical:</strong> I confirm that I have no medical conditions that would prevent me from safely participating. I will inform the Game Master of any relevant conditions before the game. *
+                <strong className="text-white">Medical:</strong> I confirm that I have no medical conditions that would prevent me from safely participating. I will inform the {branding.staff_role_worker} of any relevant conditions before the game. *
               </span>
             </label>
             <label className="flex items-start gap-3 cursor-pointer group">
@@ -404,7 +406,7 @@ export default function Waiver() {
                 className="w-4 h-4 mt-0.5 rounded border-gray-600 bg-white/5 text-gr8-red focus:ring-gr8-red"
               />
               <span className="text-sm text-gray-300 group-hover:text-white transition-colors">
-                <strong className="text-white">Rules:</strong> I agree to follow all rules and instructions from the Game Master, including no phones, no excessive force, and no food/drinks in the rooms. *
+                <strong className="text-white">Rules:</strong> I agree to follow all rules and instructions from the {branding.staff_role_worker}, including no phones, no excessive force, and no food/drinks in the rooms. *
               </span>
             </label>
             <label className="flex items-start gap-3 cursor-pointer group">

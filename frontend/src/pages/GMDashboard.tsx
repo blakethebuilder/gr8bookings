@@ -3,6 +3,7 @@ import { Clock, Users, AlertTriangle, CheckCircle, Eye, ChevronRight, Loader2 } 
 import { format } from 'date-fns'
 import pb, { type Booking, type Room, type TimeSlot } from '../lib/pocketbase'
 import { useAuth } from '../lib/auth'
+import { useBranding } from '../lib/branding'
 import { useRealtime } from '../hooks/useRealtime'
 
 interface HostedGame {
@@ -16,6 +17,7 @@ interface HostedGame {
 
 export default function GMDashboard() {
   const { staff } = useAuth()
+  const { branding } = useBranding()
   const [games, setGames] = useState<HostedGame[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedGame, setSelectedGame] = useState<HostedGame | null>(null)
@@ -78,7 +80,7 @@ export default function GMDashboard() {
         <h1 className="text-2xl sm:text-3xl font-black text-white">
           Welcome, <span className="text-gr8-red">{staff?.name}</span>
         </h1>
-        <p className="text-gray-500 mt-1">Game Master Dashboard</p>
+        <p className="text-gray-500 mt-1">{branding.staff_role_worker} Dashboard</p>
       </div>
 
       {/* Stats */}
@@ -164,11 +166,13 @@ export default function GMDashboard() {
                   <p className="text-xs text-gray-400">{selectedGame.booking.customer_phone}</p>
                 )}
               </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="bg-white/5 rounded-lg p-3">
-                  <p className="text-xs text-gray-500">Players</p>
-                  <p className="text-white font-bold text-lg">{selectedGame.booking.player_count}</p>
-                </div>
+              <div className={`grid ${branding.show_player_count ? 'grid-cols-2' : 'grid-cols-1'} gap-3`}>
+                {branding.show_player_count && (
+                  <div className="bg-white/5 rounded-lg p-3">
+                    <p className="text-xs text-gray-500">Players</p>
+                    <p className="text-white font-bold text-lg">{selectedGame.booking.player_count}</p>
+                  </div>
+                )}
                 <div className="bg-white/5 rounded-lg p-3">
                   <p className="text-xs text-gray-500">Time</p>
                   <p className="text-white font-bold text-lg">{selectedGame.timeSlot.start_time}</p>
@@ -227,6 +231,7 @@ function GameCard({ game, onSelect, onStart, onCheckIn, onEnd, onHint }: {
   onEnd?: () => void
   onHint?: () => void
 }) {
+  const { branding } = useBranding()
   const statusColors: Record<string, string> = {
     assigned: 'bg-blue-500/20 text-blue-400',
     checked_in: 'bg-yellow-500/20 text-yellow-400',
@@ -243,7 +248,7 @@ function GameCard({ game, onSelect, onStart, onCheckIn, onEnd, onHint }: {
             {game.status.replace('_', ' ').toUpperCase()}
           </span>
         </div>
-        <p className="text-sm text-gray-400">{game.booking.customer_name} • {game.booking.player_count} players</p>
+        <p className="text-sm text-gray-400">{game.booking.customer_name}{branding.show_player_count ? ` • ${game.booking.player_count} players` : ''}</p>
         <p className="text-xs text-gray-500">{game.timeSlot.start_time} — {game.timeSlot.end_time}</p>
       </div>
       <div className="flex items-center gap-2">

@@ -17,6 +17,7 @@ import {
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, isWithinInterval, parseISO } from 'date-fns'
 import pb, { type Room, type Booking, type TimeSlot } from '../lib/pocketbase'
 import { useAuth } from '../lib/auth'
+import { useBranding } from '../lib/branding'
 import { useRealtime } from '../hooks/useRealtime'
 
 interface GameHostRecord {
@@ -70,6 +71,7 @@ interface RoomStats {
 
 export default function GrandmasterDashboard() {
   const { staff, isGrandmaster } = useAuth()
+  const { branding } = useBranding()
   const [rooms, setRooms] = useState<Room[]>([])
   const [bookings, setBookings] = useState<Booking[]>([])
   const [gameHosts, setGameHosts] = useState<GameHostRecord[]>([])
@@ -263,7 +265,7 @@ export default function GrandmasterDashboard() {
     <div>
       <div className="mb-8">
         <h1 className="text-2xl sm:text-3xl font-black text-white">
-          Grandmaster <span className="text-gr8-red">Dashboard</span>
+          {branding.staff_role_admin} <span className="text-gr8-red">Dashboard</span>
         </h1>
         <p className="text-gray-500 mt-1">
           Welcome back, {staff?.name}. Here's your business overview.
@@ -364,7 +366,7 @@ export default function GrandmasterDashboard() {
       <div className="card-dark mb-8">
         <h2 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
           <Award size={18} className="text-gr8-gold" />
-          Game Master Performance
+          {branding.staff_role_worker} Performance
         </h2>
         {gmStats.length === 0 ? (
           <p className="text-gray-500 text-sm">No game host data yet.</p>
@@ -373,7 +375,7 @@ export default function GrandmasterDashboard() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-gray-700/50">
-                  <th className="text-left py-3 px-4 text-gray-500 font-medium">Game Master</th>
+                  <th className="text-left py-3 px-4 text-gray-500 font-medium">{branding.staff_role_worker}</th>
                   <th className="text-center py-3 px-4 text-gray-500 font-medium">Games Hosted</th>
                   <th className="text-center py-3 px-4 text-gray-500 font-medium">Hints Given</th>
                   <th className="text-center py-3 px-4 text-gray-500 font-medium">Completed</th>
@@ -414,10 +416,10 @@ export default function GrandmasterDashboard() {
       <div className="card-dark mb-8">
         <h2 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
           <BedDouble size={18} className="text-gr8-red" />
-          Room Occupancy
+          {branding.resource_label} Occupancy
         </h2>
         {roomStats.length === 0 ? (
-          <p className="text-gray-500 text-sm">No room data available.</p>
+          <p className="text-gray-500 text-sm">No {branding.resource_label.toLowerCase()} data available.</p>
         ) : (
           <div className="space-y-3">
             {roomStats.map(({ room, totalBookings, thisWeekBookings, thisMonthBookings, revenue }) => {
@@ -470,8 +472,8 @@ export default function GrandmasterDashboard() {
                 <tr className="border-b border-gray-700/50">
                   <th className="text-left py-3 px-4 text-gray-500 font-medium">Reference</th>
                   <th className="text-left py-3 px-4 text-gray-500 font-medium">Customer</th>
-                  <th className="text-left py-3 px-4 text-gray-500 font-medium">Room</th>
-                  <th className="text-center py-3 px-4 text-gray-500 font-medium">Players</th>
+                  <th className="text-left py-3 px-4 text-gray-500 font-medium">{branding.resource_label}</th>
+                  {branding.show_player_count && <th className="text-center py-3 px-4 text-gray-500 font-medium">Players</th>}
                   <th className="text-right py-3 px-4 text-gray-500 font-medium">Amount</th>
                   <th className="text-left py-3 px-4 text-gray-500 font-medium">Payment</th>
                   <th className="text-left py-3 px-4 text-gray-500 font-medium">Status</th>
@@ -490,7 +492,7 @@ export default function GrandmasterDashboard() {
                           <span className="text-gray-400 text-xs">{room?.name || '—'}</span>
                         </div>
                       </td>
-                      <td className="py-3 px-4 text-center text-gray-400">{b.player_count}</td>
+                      {branding.show_player_count && <td className="py-3 px-4 text-center text-gray-400">{b.player_count}</td>}
                       <td className="py-3 px-4 text-right text-gray-400">R{b.total_amount}</td>
                       <td className="py-3 px-4">
                         <span className={`px-2 py-1 rounded-full text-[10px] font-bold ${
@@ -553,11 +555,11 @@ export default function GrandmasterDashboard() {
                   ) : (
                     <div>
                       <p className="text-white font-medium text-sm">
-                        {event.room?.name || 'Unknown Room'}
+                        {event.room?.name || `Unknown ${branding.resource_label}`}
                       </p>
                       {event.booking ? (
                         <p className="text-gray-500 text-xs">
-                          {event.booking.customer_name} • {event.booking.player_count} players •{' '}
+                          {event.booking.customer_name}{branding.show_player_count ? ` • ${event.booking.player_count} players` : ''} •{' '}
                           <span className={`font-bold ${
                             event.booking.status === 'confirmed' ? 'text-green-400' :
                             event.booking.status === 'pending' ? 'text-yellow-400' :

@@ -5,6 +5,7 @@ import {
   Users, Crown, Menu, X
 } from 'lucide-react'
 import { useAuth } from '../lib/auth'
+import { useBranding } from '../lib/branding'
 
 const gmNavItems = [
   { to: '/gm', icon: CalendarDays, label: 'My Games' },
@@ -25,6 +26,7 @@ export default function Layout() {
   const { staff, isGrandmaster, logout } = useAuth()
   const navigate = useNavigate()
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const { branding } = useBranding()
 
   const navItems = isGrandmaster ? grandmasterNavItems : gmNavItems
 
@@ -52,10 +54,10 @@ export default function Layout() {
         <div className="p-6 border-b border-gray-800 flex items-center justify-between">
           <div>
             <h1 className="text-xl font-black text-white tracking-tight">
-              THE GR8 <span className="text-gr8-red">ESCAPE</span>
+              {branding.business_name}
             </h1>
             <p className="text-xs text-gray-500 mt-1">
-              {isGrandmaster ? 'Grandmaster Portal' : 'Game Master HQ'}
+              {isGrandmaster ? `${branding.staff_role_admin} Portal` : `${branding.staff_role_worker} HQ`}
             </p>
           </div>
           <button onClick={() => setSidebarOpen(false)} className="lg:hidden text-gray-500 hover:text-white">
@@ -75,8 +77,8 @@ export default function Layout() {
             <div className="min-w-0">
               <p className="text-sm font-medium text-white truncate">{staff.name}</p>
               <p className="text-xs text-gray-500 flex items-center gap-1">
-                {isGrandmaster ? <Crown size={10} className="text-gr8-red" /> : null}
-                {isGrandmaster ? 'Grandmaster' : 'Game Master'}
+                {isGrandmaster ? <Crown size={10} style={{ color: branding.primary_color }} /> : null}
+                {isGrandmaster ? branding.staff_role_admin : branding.staff_role_worker}
               </p>
             </div>
           </div>
@@ -84,7 +86,9 @@ export default function Layout() {
 
         {/* Navigation */}
         <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
-          {navItems.map(({ to, icon: Icon, label }) => (
+          {navItems.map(({ to, icon: Icon, label }) => {
+            const displayLabel = label === 'Rooms' ? branding.resource_label_plural : label
+            return (
             <NavLink
               key={to}
               to={to}
@@ -92,15 +96,16 @@ export default function Layout() {
               className={({ isActive }) =>
                 `flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
                   isActive
-                    ? 'bg-gr8-red/10 text-gr8-red'
+                    ? ''
                     : 'text-gray-400 hover:text-white hover:bg-white/5'
                 }`
               }
+              style={({ isActive }) => isActive ? { backgroundColor: branding.primary_color + '1A', color: branding.primary_color } : undefined}
             >
               <Icon size={18} />
-              {label}
+              {displayLabel}
             </NavLink>
-          ))}
+          )})}
         </nav>
 
         {/* Logout */}
@@ -123,7 +128,7 @@ export default function Layout() {
             <Menu size={24} />
           </button>
           <h1 className="text-lg font-black text-white tracking-tight">
-            THE GR8 <span className="text-gr8-red">ESCAPE</span>
+            {branding.business_name}
           </h1>
         </header>
 

@@ -137,8 +137,12 @@ export function BrandingProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     loadBranding().then(b => {
       setBranding(b)
-      // Apply primary color as CSS variable
-      document.documentElement.style.setProperty('--gr8-red', b.primary_color)
+      // Apply primary color as CSS variable (RGB components for Tailwind opacity support)
+      const hex = b.primary_color
+      const r = parseInt(hex.slice(1, 3), 16)
+      const g = parseInt(hex.slice(3, 5), 16)
+      const bVal = parseInt(hex.slice(5, 7), 16)
+      document.documentElement.style.setProperty('--gr8-red', `${r} ${g} ${bVal}`)
       setLoading(false)
     })
   }, [])

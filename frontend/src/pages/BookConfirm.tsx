@@ -3,8 +3,10 @@ import { useParams, Link } from 'react-router-dom'
 import { CheckCircle, Calendar, Clock, Users, Home, AlertCircle, Loader2, Share2, Copy, Check, Shield, Download, XCircle } from 'lucide-react'
 import { format } from 'date-fns'
 import pb, { type Booking, type Room, type TimeSlot } from '../lib/pocketbase'
+import { useBranding } from '../lib/branding'
 
 export default function BookConfirm() {
+  const { branding } = useBranding()
   const { reference } = useParams()
   const [booking, setBooking] = useState<Booking | null>(null)
   const [room, setRoom] = useState<Room | null>(null)
@@ -97,13 +99,13 @@ export default function BookConfirm() {
     const ics = [
       'BEGIN:VCALENDAR',
       'VERSION:2.0',
-      'PRODID:-//The Gr8 Escape//Booking//EN',
+      `PRODID:-//${branding.business_name}//Booking//EN`,
       'BEGIN:VEVENT',
       `DTSTART:${startDateTime.replace(/[-:]/g, '').replace('T', 'T')}`,
       `DTEND:${endDateTime.replace(/[-:]/g, '').replace('T', 'T')}`,
-      `SUMMARY:Escape Room - ${room.name}`,
-      `DESCRIPTION:The Gr8 Escape - ${room.name}\\nBooking: ${booking.reference}\\nPlayers: ${booking.player_count}\\nPlease arrive 15 minutes early. No phones allowed.`,
-      `LOCATION:The Gr8 Escape, Pineslopes Office Park, Fourways, Johannesburg`,
+      `SUMMARY:${branding.resource_label} - ${room.name}`,
+      `DESCRIPTION:${branding.business_name} - ${room.name}\\nBooking: ${booking.reference}\\nPlayers: ${booking.player_count}\\nPlease arrive 15 minutes early. No phones allowed.`,
+      `LOCATION:${branding.business_name}, Pineslopes Office Park, Fourways, Johannesburg`,
       `STATUS:CONFIRMED`,
       `END:VEVENT`,
       'END:VCALENDAR',
@@ -123,7 +125,7 @@ export default function BookConfirm() {
       <header className="border-b border-white/10 py-4 px-6">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
           <a href="https://gr8.smartintegrate.co.za" className="text-xl font-black text-white tracking-tight">
-            THE GR8 <span className="text-gr8-red">ESCAPE</span>
+            {branding.business_name}
           </a>
         </div>
       </header>
@@ -151,7 +153,7 @@ export default function BookConfirm() {
         <div className="bg-[#1e1e1e] border border-gray-700/50 rounded-xl p-6 mb-8 text-left">
           <div className="flex items-center gap-3 mb-4">
             {room && <div className="w-4 h-4 rounded-full" style={{ backgroundColor: room.color }} />}
-            <span className="text-lg font-bold text-white">{room?.name || 'Escape Room'}</span>
+            <span className="text-lg font-bold text-white">{room?.name || branding.resource_label}</span>
           </div>
           <div className="space-y-3 text-sm">
             {timeSlot && (
@@ -301,7 +303,7 @@ export default function BookConfirm() {
             <Home size={18} /> Back to Site
           </a>
           <Link to="/book" className="px-8 py-3 rounded-lg border border-gray-700 text-gray-400 hover:text-white hover:border-gray-500 transition-colors flex items-center justify-center gap-2">
-            Book Another Room
+            Book Another {branding.resource_label}
           </Link>
         </div>
       </div>

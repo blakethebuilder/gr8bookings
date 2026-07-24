@@ -7,6 +7,7 @@ import { format, addDays, startOfWeek, endOfWeek } from 'date-fns'
 import { RefreshCw, Zap, UserPlus, Ban } from 'lucide-react'
 import pb, { type Room, type Booking, type TimeSlot, type GmBlock } from '../lib/pocketbase'
 import { useRealtime } from '../hooks/useRealtime'
+import { useBranding } from '../lib/branding'
 import BlockModal from '../components/BlockModal'
 import QuickBook from '../components/QuickBook'
 
@@ -41,6 +42,7 @@ export default function GameMaster() {
   const [realtimeConnected, setRealtimeConnected] = useState(false)
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768)
   const calendarRef = useRef<FullCalendar>(null)
+  const { branding } = useBranding()
 
   // Detect mobile viewport
   useEffect(() => {
@@ -186,7 +188,7 @@ export default function GameMaster() {
     <div>
       <div className="flex items-center justify-between mb-4 sm:mb-6">
         <div>
-          <h1 className="text-xl sm:text-3xl font-black text-white">Game Master HQ</h1>
+          <h1 className="text-xl sm:text-3xl font-black text-white">{branding.staff_role_worker} HQ</h1>
           <p className="text-gray-500 mt-1 text-xs sm:text-sm">Live booking calendar</p>
         </div>
         <div className="flex items-center gap-2 sm:gap-3">
@@ -217,7 +219,7 @@ export default function GameMaster() {
         ))}
         <div className="flex items-center gap-1 sm:gap-2 text-[10px] sm:text-xs text-gray-400">
           <span className="w-2 h-2 sm:w-3 sm:h-3 rounded-full bg-gray-500" />
-          <span className="hidden sm:inline">GM Block</span>
+          <span className="hidden sm:inline">Blocked</span>
         </div>
       </div>
 
@@ -322,7 +324,7 @@ export default function GameMaster() {
               <div className="flex items-center gap-2">
                 <div className="w-3 h-3 rounded-full" style={{ backgroundColor: selectedEvent.backgroundColor }} />
                 <span className="text-xs font-bold uppercase tracking-wider text-gray-500">
-                  {selectedEvent.extendedProps.type === 'booking' ? 'Booking' : 'GM Block'}
+                  {selectedEvent.extendedProps.type === 'booking' ? 'Booking' : 'Blocked'}
                 </span>
               </div>
               <button onClick={() => setSelectedEvent(null)} className="text-gray-500 hover:text-white text-xl">&times;</button>
