@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Clock, Users, AlertTriangle, CheckCircle, Eye, ChevronRight, Loader2 } from 'lucide-react'
+import { Clock, Users, AlertTriangle, CheckCircle, Eye, ChevronRight, Loader2, ToggleLeft, ToggleRight } from 'lucide-react'
 import { format } from 'date-fns'
 import pb, { type Booking, type Room, type TimeSlot } from '../lib/pocketbase'
 import { useAuth } from '../lib/auth'
@@ -19,6 +19,22 @@ export default function GMDashboard() {
   const [games, setGames] = useState<HostedGame[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedGame, setSelectedGame] = useState<HostedGame | null>(null)
+  const [isWorking, setIsWorking] = useState(staff?.is_working ?? false)
+  const [togglingWork, setTogglingWork] = useState(false)
+
+  const toggleWorking = async () => {
+    if (!staff) return
+    setTogglingWork(true)
+    const newState = !isWorking
+    try {
+      await pb.collection('staff').update(staff.id, { is_working: newState })
+      setIsWorking(newState)
+    } catch (e) {
+      console.error('Failed to toggle working status:', e)
+    } finally {
+      setTogglingWork(false)
+    }
+  }
 
   const loadGames = async () => {
     if (!staff) return
@@ -75,10 +91,33 @@ export default function GMDashboard() {
   return (
     <div>
       <div className="mb-8">
-        <h1 className="text-2xl sm:text-3xl font-black text-white">
-          Welcome, <span className="text-gr8-red">{staff?.name}</span>
-        </h1>
-        <p className="text-gray-500 mt-1">Game Master Dashboard</p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-black text-white">
+              Welcome, <span className="text-gr8-red">{staff?.name}</span>
+            </h1>
+            <p className="text-gray-500 mt-1">Game Master Dashboard</p>
+          </div>
+          <button
+            onClick={toggleWorking}
+            disabled={togglingWork}
+            className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-bold transition-all ${
+              isWorking
+                ? 'bg-green-500/10 text-green-400 border border-green-500/30'
+                : 'bg-white/5 text-gray-500 border border-gray-700/50'
+            }`}
+            title={isWorking ? 'Click to go off duty' : 'Click to start working'}
+          >
+            {togglingWork ? (
+              <Loader2 size={18} className="animate-spin" />
+            ) : isWorking ? (
+              <ToggleRight size={18} />
+            ) : (
+              <ToggleLeft size={18} />
+            )}
+            {togglingWork ? '...' : isWorking ? 'On Duty' : 'Off Duty'}
+          </button>
+        </div>
       </div>
 
       {/* Stats */}

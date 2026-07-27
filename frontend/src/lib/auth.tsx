@@ -9,6 +9,7 @@ export interface Staff {
   role: 'grandmaster' | 'gamemaster'
   avatar_color: string
   is_active: boolean
+  is_working: boolean
   pin_code: string
   created: string
   updated: string

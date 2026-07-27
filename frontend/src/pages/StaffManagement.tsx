@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Users, Plus, X, Loader2, Shield, ShieldOff, Mail, Phone, Key, Eye, EyeOff } from 'lucide-react'
+import { Users, Plus, X, Loader2, Shield, ShieldOff, Mail, Phone, Key, Eye, EyeOff, ToggleLeft, ToggleRight } from 'lucide-react'
 import pb from '../lib/pocketbase'
 import type { Staff } from '../lib/auth'
 
@@ -49,6 +49,7 @@ export default function StaffManagement() {
         role: form.role,
         avatar_color: editingStaff?.avatar_color || colors[Math.floor(Math.random() * colors.length)],
         is_active: editingStaff?.is_active ?? true,
+        is_working: editingStaff?.is_working ?? true,
         pin_code: form.password,
       }
 
@@ -77,6 +78,11 @@ export default function StaffManagement() {
 
   const toggleActive = async (s: Staff) => {
     await pb.collection('staff').update(s.id, { is_active: !s.is_active })
+    loadStaff()
+  }
+
+  const toggleWorking = async (s: Staff) => {
+    await pb.collection('staff').update(s.id, { is_working: !s.is_working })
     loadStaff()
   }
 
@@ -150,14 +156,31 @@ export default function StaffManagement() {
                     </button>
                   </td>
                   <td className="py-3 px-4">
-                    <span className={`px-2 py-1 rounded-full text-xs font-bold ${
-                      s.is_active ? 'bg-green-500/20 text-green-400' : 'bg-gray-500/20 text-gray-500'
-                    }`}>
-                      {s.is_active ? 'Active' : 'Inactive'}
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className={`px-2 py-1 rounded-full text-xs font-bold ${
+                        s.is_active ? 'bg-green-500/20 text-green-400' : 'bg-gray-500/20 text-gray-500'
+                      }`}>
+                        {s.is_active ? 'Active' : 'Inactive'}
+                      </span>
+                      {s.is_working && (
+                        <span className="px-2 py-1 rounded-full text-xs font-bold bg-gr8-gold/20 text-gr8-gold">
+                          Working
+                        </span>
+                      )}
+                    </div>
                   </td>
                   <td className="py-3 px-4">
                     <div className="flex items-center justify-end gap-2">
+                      <button
+                        onClick={() => toggleWorking(s)}
+                        className="p-1.5 rounded-lg hover:bg-white/10 transition-colors"
+                        title={s.is_working ? 'Set Off Duty' : 'Set Working'}
+                      >
+                        {s.is_working
+                          ? <ToggleRight size={18} className="text-green-400" />
+                          : <ToggleLeft size={18} className="text-gray-500" />
+                        }
+                      </button>
                       <button
                         onClick={() => toggleActive(s)}
                         className="p-1.5 rounded-lg hover:bg-white/10 text-gray-500 hover:text-white transition-colors"

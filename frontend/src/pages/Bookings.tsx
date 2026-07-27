@@ -6,6 +6,7 @@ import AssignGM from '../components/AssignGM'
 import { useToast } from '../lib/toast'
 
 interface HostInfo {
+  staffId: string
   staffName: string
   staffColor: string
   status: string
@@ -94,7 +95,7 @@ export default function Bookings() {
     // Find unassigned bookings that have a room + time slot
     const unassigned = bookings.filter(b => {
       if (hosts[b.id]) return false // already has a host
-      if (!b.room || !b.time_slot) return false // can't assign without room/slot
+      if (!b.room || !b.time_slot) return false
       if (b.status === 'cancelled') return false
       return true
     })
@@ -104,11 +105,11 @@ export default function Bookings() {
       return
     }
 
-    // Fetch active gamemasters
+    // Fetch working gamemasters
     let gms: { id: string; name: string }[] = []
     try {
       gms = await pb.collection('staff').getFullList({
-        filter: 'is_active = true && role = "gamemaster"',
+        filter: 'is_active = true && is_working = true && role = "gamemaster"',
         sort: 'name',
       })
     } catch (e) {
@@ -117,44 +118,80 @@ export default function Bookings() {
     }
 
     if (gms.length === 0) {
-      toast('No active Game Masters found.', 'error')
+      toast('No Game Masters currently working. GMs must toggle "Working" on the Staff page first.', 'error')
       return
     }
 
+    // Build map: staffId → set of time_slot IDs they're already booked for
+    const gmBookedSlots = new Map<string, Set<string>>()
+    for (const [bookingId, host] of Object.entries(hosts)) {
+      const booking = bookings.find(b => b.id === bookingId)
+      if (!booking?.time_slot) continue
+      if (!gmBookedSlots.has(host.staffId)) {
+        gmBookedSlots.set(host.staffId, new Set())
+      }
+      gmBookedSlots.get(host.staffId)!.add(booking.time_slot)
+    }
+
     const confirmed = window.confirm(
-      `Assign ${unassigned.length} unassigned booking(s) across ${gms.length} Game Master(s)?\n\n` +
-      `Distribution: ~${Math.ceil(unassigned.length / gms.length)} each (round-robin).`
+      `Assign ${unassigned.length} unassigned booking(s) across ${gms.length} working Game Master(s)?\n\n` +
+      `GMs already booked for a time slot will be skipped for that slot.`
     )
     if (!confirmed) return
 
     setAssigningAll(true)
     let assigned = 0
+    let skipped = 0
     let failed = 0
 
-    for (let i = 0; i < unassigned.length; i++) {
-      const booking = unassigned[i]
-      const gm = gms[i % gms.length]
-      try {
-        await pb.collection('game_hosts').create({
-          booking: booking.id,
-          staff: gm.id,
-          assigned_at: new Date().toISOString(),
-          status: 'assigned',
-          hints_used: 0,
-        })
-        assigned++
-      } catch (e) {
-        failed++
-        console.error(`Failed to assign GM to booking ${booking.reference}:`, e)
+    let gmIndex = 0
+    for (const booking of unassigned) {
+      // Try each working GM, starting from the current round-robin position
+      let assigned_this = false
+      for (let attempt = 0; attempt < gms.length; attempt++) {
+        const gm = gms[(gmIndex + attempt) % gms.length]
+
+        // Skip if this GM is already booked for this time slot
+        const bookedSlots = gmBookedSlots.get(gm.id)
+        if (bookedSlots?.has(booking.time_slot)) continue
+
+        try {
+          await pb.collection('game_hosts').create({
+            booking: booking.id,
+            staff: gm.id,
+            assigned_at: new Date().toISOString(),
+            status: 'assigned',
+            hints_used: 0,
+          })
+          // Track this assignment to avoid double-booking on subsequent iterations
+          if (!gmBookedSlots.has(gm.id)) {
+            gmBookedSlots.set(gm.id, new Set())
+          }
+          gmBookedSlots.get(gm.id)!.add(booking.time_slot)
+          assigned++
+          assigned_this = true
+          gmIndex = (gmIndex + attempt + 1) % gms.length // advance past this GM
+          break
+        } catch (e) {
+          failed++
+          console.error(`Failed to assign GM to booking ${booking.reference}:`, e)
+        }
+      }
+      if (!assigned_this && failed === 0) {
+        skipped++
       }
     }
 
     setAssigningAll(false)
-    if (failed > 0) {
-      toast(`Assigned ${assigned} booking(s). ${failed} failed — check console.`, 'error')
-    } else {
-      toast(`Assigned ${assigned} booking(s) across ${gms.length} Game Master(s).`, 'success')
-    }
+
+    const parts: string[] = []
+    if (assigned > 0) parts.push(`${assigned} assigned`)
+    if (skipped > 0) parts.push(`${skipped} skipped (no available GM)`)
+    if (failed > 0) parts.push(`${failed} failed`)
+    toast(
+      parts.join(', ') + ` across ${gms.length} working GM(s).`,
+      skipped > 0 || failed > 0 ? 'warning' : 'success'
+    )
     loadData()
   }
 
@@ -179,6 +216,7 @@ export default function Bookings() {
       for (const h of hostsArr) {
         const staff = h.expand?.staff
         hostMap[h.booking] = {
+          staffId: h.staff,
           staffName: staff?.name || 'Unknown',
           staffColor: staff?.avatar_color || '#666',
           status: h.status,

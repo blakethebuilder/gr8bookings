@@ -8,6 +8,7 @@ import {
   AlertCircle,
   ArrowUpRight,
   BedDouble,
+  Wifi,
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, isWithinInterval, parseISO } from 'date-fns'
@@ -62,6 +63,7 @@ export default function GrandmasterDashboard() {
   const [gameHosts, setGameHosts] = useState<GameHostRecord[]>([])
   const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([])
   const [gmBlocks, setGmBlocks] = useState<GmBlock[]>([])
+  const [gmStaff, setGmStaff] = useState<{ id: string; name: string; avatar_color: string; is_working: boolean }[]>([])
   const [loading, setLoading] = useState(true)
 
   const loadData = async () => {
@@ -72,6 +74,7 @@ export default function GrandmasterDashboard() {
         hostsData,
         slotsData,
         blocksData,
+        gmStaffData,
       ] = await Promise.all([
         pb.collection('rooms').getFullList<Room>({ sort: 'sort_order' }),
         pb.collection('bookings').getFullList<Booking>({ sort: '-id' }),
@@ -81,6 +84,10 @@ export default function GrandmasterDashboard() {
         }),
         pb.collection('time_slots').getFullList<TimeSlot>({ sort: 'date,start_time' }),
         pb.collection('gm_blocks').getFullList<GmBlock>({ sort: 'date,start_time' }),
+        pb.collection('staff').getFullList<{ id: string; name: string; avatar_color: string; is_working: boolean }>({
+          filter: 'is_active = true && role = "gamemaster"',
+          sort: 'name',
+        }),
       ])
 
       setRooms(roomsData)
@@ -88,6 +95,7 @@ export default function GrandmasterDashboard() {
       setGameHosts(hostsData)
       setTimeSlots(slotsData)
       setGmBlocks(blocksData)
+      setGmStaff(gmStaffData)
     } catch (e) {
       console.error('Failed to load grandmaster data:', e)
     } finally {
@@ -149,6 +157,19 @@ export default function GrandmasterDashboard() {
 
     return Array.from(statsMap.values()).sort((a, b) => b.gamesHosted - a.gamesHosted)
   }, [gameHosts])
+
+  const workingGms = useMemo(() => {
+    return gmStaff.map(gm => {
+      const activeGames = gameHosts.filter(h =>
+        h.staff === gm.id && ['assigned', 'checked_in', 'in_progress'].includes(h.status)
+      ).length
+      return { ...gm, activeGames }
+    }).sort((a, b) => {
+      // Working GMs first, then by name
+      if (a.is_working !== b.is_working) return a.is_working ? -1 : 1
+      return a.name.localeCompare(b.name)
+    })
+  }, [gmStaff, gameHosts])
 
   const roomStats = useMemo(() => {
     return rooms.map(room => {
@@ -281,6 +302,48 @@ export default function GrandmasterDashboard() {
           <p className="text-2xl sm:text-3xl font-black text-red-400">{bookingStats.cancelled}</p>
           <p className="text-xs text-gray-500 uppercase tracking-wider mt-1">Cancelled</p>
         </div>
+      </div>
+
+      {/* Who's Working */}
+      <div className="card-dark mb-8">
+        <h2 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+          <Wifi size={18} className="text-green-400" />
+          Who's Working
+        </h2>
+        {workingGms.length === 0 ? (
+          <p className="text-gray-500 text-sm">No active Game Masters.</p>
+        ) : (
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+            {workingGms.map(gm => (
+              <div
+                key={gm.id}
+                className={`rounded-lg p-4 text-center border transition-colors ${
+                  gm.is_working
+                    ? 'bg-green-500/5 border-green-500/20'
+                    : 'bg-white/5 border-gray-700/30 opacity-50'
+                }`}
+              >
+                <div className="relative inline-block">
+                  <div
+                    className="w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-bold mx-auto"
+                    style={{ backgroundColor: gm.avatar_color }}
+                  >
+                    {gm.name.charAt(0).toUpperCase()}
+                  </div>
+                  <div className={`absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full border-2 border-gr8-card ${
+                    gm.is_working ? 'bg-green-500' : 'bg-gray-500'
+                  }`} />
+                </div>
+                <p className="text-white font-medium text-sm mt-2 truncate">{gm.name}</p>
+                <p className="text-xs text-gray-500 mt-0.5">
+                  {gm.is_working
+                    ? `${gm.activeGames} active game${gm.activeGames !== 1 ? 's' : ''}`
+                    : 'Off Duty'}
+                </p>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Bookings per Game Master */}
