@@ -33,8 +33,6 @@ function App() {
         <Route element={<Layout />}>
           <Route path="/gm" element={<GMDashboard />} />
           <Route path="/calendar" element={<GameMaster />} />
-          <Route path="/rooms" element={<Rooms />} />
-          <Route path="/bookings" element={<Bookings />} />
         </Route>
       </Route>
 
@@ -42,6 +40,8 @@ function App() {
       <Route element={<AuthGate allowedRoles={['grandmaster']} />}>
         <Route element={<Layout />}>
           <Route path="/grandmaster" element={<GrandmasterDashboard />} />
+          <Route path="/rooms" element={<Rooms />} />
+          <Route path="/bookings" element={<Bookings />} />
           <Route path="/staff" element={<StaffManagement />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/finances" element={<Finances />} />

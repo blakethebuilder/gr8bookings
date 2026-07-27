@@ -4,7 +4,7 @@
 
 | Issue | Severity | Status |
 |-------|----------|--------|
-| Collection rules public | High | ⚠️ Open — staff collection has public read (required for PIN→password login). Recommend: migrate staff to PocketBase auth collection. Passwords masked in UI. |
+| Collection rules public | High | ✅ Fixed — staff collection uses `authWithPassword`, listRule/viewRule locked to `@request.auth.id != ""`. Seed.js now forces rule updates on every run (not just null). |
 | Payfast secrets on client | Medium | ✅ Fixed — server-side signature |
 | No input validation | Low | ✅ Fixed — name/email validation |
 | Auto-confirm bypass | Medium | ✅ Fixed — removed |

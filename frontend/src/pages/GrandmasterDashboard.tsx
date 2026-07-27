@@ -1,9 +1,9 @@
 import { useEffect, useState, useMemo } from 'react'
 import {
-  Users,
   Calendar,
   Clock,
   Loader2,
+  TrendingUp,
   Award,
   AlertCircle,
   ArrowUpRight,
@@ -38,15 +38,6 @@ interface GmBlock {
   reason: string
 }
 
-interface StaffRecord {
-  id: string
-  name: string
-  email: string
-  role: 'grandmaster' | 'gamemaster'
-  avatar_color: string
-  is_active: boolean
-}
-
 interface GmStats {
   staffId: string
   name: string
@@ -69,7 +60,6 @@ export default function GrandmasterDashboard() {
   const [rooms, setRooms] = useState<Room[]>([])
   const [bookings, setBookings] = useState<Booking[]>([])
   const [gameHosts, setGameHosts] = useState<GameHostRecord[]>([])
-  const [staffList, setStaffList] = useState<StaffRecord[]>([])
   const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([])
   const [gmBlocks, setGmBlocks] = useState<GmBlock[]>([])
   const [loading, setLoading] = useState(true)
@@ -80,7 +70,6 @@ export default function GrandmasterDashboard() {
         roomsData,
         bookingsData,
         hostsData,
-        staffData,
         slotsData,
         blocksData,
       ] = await Promise.all([
@@ -90,7 +79,6 @@ export default function GrandmasterDashboard() {
           expand: 'booking,staff',
           sort: '-assigned_at',
         }),
-        pb.collection('staff').getFullList<StaffRecord>({ filter: 'is_active = true' }),
         pb.collection('time_slots').getFullList<TimeSlot>({ sort: 'date,start_time' }),
         pb.collection('gm_blocks').getFullList<GmBlock>({ sort: 'date,start_time' }),
       ])
@@ -98,7 +86,6 @@ export default function GrandmasterDashboard() {
       setRooms(roomsData)
       setBookings(bookingsData)
       setGameHosts(hostsData)
-      setStaffList(staffData)
       setTimeSlots(slotsData)
       setGmBlocks(blocksData)
     } catch (e) {
@@ -260,11 +247,11 @@ export default function GrandmasterDashboard() {
       {/* Revenue teaser — links to full Finances page */}
       <Link
         to="/finances"
-        className="card-dark mb-8 flex items-center justify-between group hover:border-gr8-gold/30 transition-colors cursor-pointer block"
+        className="card-dark mb-8 flex items-center justify-between group hover:border-gr8-gold/30 transition-colors cursor-pointer"
       >
         <div className="flex items-center gap-4">
           <div className="p-2 rounded-lg bg-gr8-gold/10 text-gr8-gold">
-            <Award size={20} />
+            <TrendingUp size={20} />
           </div>
           <div>
             <p className="text-xs text-gray-500 uppercase tracking-wider">Revenue All Time</p>
@@ -356,7 +343,7 @@ export default function GrandmasterDashboard() {
           <p className="text-gray-500 text-sm">No room data available.</p>
         ) : (
           <div className="space-y-3">
-            {roomStats.map(({ room, totalBookings, thisWeekBookings, thisMonthBookings, revenue }) => {
+            {roomStats.map(({ room, totalBookings, thisWeekBookings, thisMonthBookings }) => {
               const maxBookings = Math.max(...roomStats.map(r => r.totalBookings), 1)
               const utilization = Math.round((totalBookings / maxBookings) * 100)
 

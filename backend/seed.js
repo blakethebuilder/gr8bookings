@@ -230,11 +230,12 @@ async function createCollections() {
         ids[col.name] = result.id
         console.log(`✓ Collection: ${col.name} (${result.id})`)
       } else {
-        // Already exists, get its ID and update rules
+        // Already exists, get its ID and update rules if they're public/unset
         const existing = await api('GET', `/api/collections/${col.name}`)
         ids[col.name] = existing.id
-        // Update rules if they're null
-        if (existing.listRule === null || existing.viewRule === null) {
+        // Update rules if they're null or public (empty string) — ensures security hardening is applied
+        if (existing.listRule === null || existing.listRule === '' ||
+            existing.viewRule === null || existing.viewRule === '') {
           await api('PATCH', `/api/collections/${existing.id}`, {
             listRule: col.listRule,
             viewRule: col.viewRule,
@@ -248,11 +249,23 @@ async function createCollections() {
         }
       }
     } catch (e) {
-      // Try to get existing
+      // Try to get existing and update rules
       try {
         const existing = await api('GET', `/api/collections/${col.name}`)
         ids[col.name] = existing.id
-        console.log(`  Collection: ${col.name} (existing ${existing.id})`)
+        if (existing.listRule === null || existing.listRule === '' ||
+            existing.viewRule === null || existing.viewRule === '') {
+          await api('PATCH', `/api/collections/${existing.id}`, {
+            listRule: col.listRule,
+            viewRule: col.viewRule,
+            createRule: col.createRule,
+            updateRule: col.updateRule,
+            deleteRule: col.deleteRule,
+          })
+          console.log(`  Collection: ${col.name} (existing, rules updated)`)
+        } else {
+          console.log(`  Collection: ${col.name} (existing ${existing.id})`)
+        }
       } catch {
         console.error(`✗ Failed: ${col.name}: ${e.message}`)
       }
