@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react'
-import { UserPlus, Loader2, Copy, Check, ExternalLink, Download, CreditCard } from 'lucide-react'
+import { UserPlus, Loader2, Copy, Check, Download, Users } from 'lucide-react'
 import { format } from 'date-fns'
 import pb, { type Booking, type Room, type TimeSlot } from '../lib/pocketbase'
 import AssignGM from '../components/AssignGM'
+import { useToast } from '../lib/toast'
 
 interface HostInfo {
   staffName: string
@@ -19,6 +20,8 @@ export default function Bookings() {
   const [filter, setFilter] = useState<string>('all')
   const [assignModal, setAssignModal] = useState<{ booking: Booking; room: Room; timeSlot: TimeSlot } | null>(null)
   const [copiedId, setCopiedId] = useState<string | null>(null)
+  const [assigningAll, setAssigningAll] = useState(false)
+  const { toast } = useToast()
 
   const copyWaiverLink = (reference: string) => {
     navigator.clipboard.writeText(`${window.location.origin}/waiver/${reference}`)
@@ -87,6 +90,74 @@ export default function Bookings() {
     URL.revokeObjectURL(url)
   }
 
+  const handleAssignAll = async () => {
+    // Find unassigned bookings that have a room + time slot
+    const unassigned = bookings.filter(b => {
+      if (hosts[b.id]) return false // already has a host
+      if (!b.room || !b.time_slot) return false // can't assign without room/slot
+      if (b.status === 'cancelled') return false
+      return true
+    })
+
+    if (unassigned.length === 0) {
+      toast('All bookings already have a Game Master assigned.', 'info')
+      return
+    }
+
+    // Fetch active gamemasters
+    let gms: { id: string; name: string }[] = []
+    try {
+      gms = await pb.collection('staff').getFullList({
+        filter: 'is_active = true && role = "gamemaster"',
+        sort: 'name',
+      })
+    } catch (e) {
+      toast('Failed to load Game Masters.', 'error')
+      return
+    }
+
+    if (gms.length === 0) {
+      toast('No active Game Masters found.', 'error')
+      return
+    }
+
+    const confirmed = window.confirm(
+      `Assign ${unassigned.length} unassigned booking(s) across ${gms.length} Game Master(s)?\n\n` +
+      `Distribution: ~${Math.ceil(unassigned.length / gms.length)} each (round-robin).`
+    )
+    if (!confirmed) return
+
+    setAssigningAll(true)
+    let assigned = 0
+    let failed = 0
+
+    for (let i = 0; i < unassigned.length; i++) {
+      const booking = unassigned[i]
+      const gm = gms[i % gms.length]
+      try {
+        await pb.collection('game_hosts').create({
+          booking: booking.id,
+          staff: gm.id,
+          assigned_at: new Date().toISOString(),
+          status: 'assigned',
+          hints_used: 0,
+        })
+        assigned++
+      } catch (e) {
+        failed++
+        console.error(`Failed to assign GM to booking ${booking.reference}:`, e)
+      }
+    }
+
+    setAssigningAll(false)
+    if (failed > 0) {
+      toast(`Assigned ${assigned} booking(s). ${failed} failed — check console.`, 'error')
+    } else {
+      toast(`Assigned ${assigned} booking(s) across ${gms.length} Game Master(s).`, 'success')
+    }
+    loadData()
+  }
+
   const loadData = async () => {
     try {
       const [bookingsData, roomsList, slotsList, hostsList] = await Promise.all([
@@ -144,13 +215,23 @@ export default function Bookings() {
           <h1 className="text-2xl sm:text-3xl font-black text-white">Bookings</h1>
           <p className="text-gray-500 mt-1">{bookings.length} total bookings</p>
         </div>
-        <button
-          onClick={exportCSV}
-          className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/5 text-gray-400 hover:text-white hover:bg-white/10 text-sm font-medium transition-colors"
-        >
-          <Download size={16} />
-          Download CSV
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleAssignAll}
+            disabled={assigningAll}
+            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-gr8-red/10 text-gr8-red hover:bg-gr8-red/20 text-sm font-medium transition-colors disabled:opacity-50"
+          >
+            {assigningAll ? <Loader2 size={16} className="animate-spin" /> : <Users size={16} />}
+            {assigningAll ? 'Assigning...' : 'Assign All GMs'}
+          </button>
+          <button
+            onClick={exportCSV}
+            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/5 text-gray-400 hover:text-white hover:bg-white/10 text-sm font-medium transition-colors"
+          >
+            <Download size={16} />
+            Download CSV
+          </button>
+        </div>
       </div>
 
       {/* Filters */}
