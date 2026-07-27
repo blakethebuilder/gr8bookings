@@ -178,18 +178,17 @@ async function createCollections() {
     },
     {
       name: 'staff',
-      type: 'base',
+      type: 'auth',
       fields: [
         { name: 'name', type: 'text', required: true },
-        { name: 'email', type: 'text', required: true, unique: true },
         { name: 'phone', type: 'text' },
         { name: 'role', type: 'select', required: true, values: ['grandmaster', 'gamemaster'] },
         { name: 'avatar_color', type: 'text' },
         { name: 'is_active', type: 'bool', required: true },
-        { name: 'password', type: 'text' },
+        { name: 'pin_code', type: 'text' },
       ],
-      listRule: '',
-      viewRule: '',
+      listRule: '@request.auth.id != ""',
+      viewRule: '@request.auth.id != ""',
       createRule: '@request.auth.id != ""',
       updateRule: '@request.auth.id != ""',
       deleteRule: '@request.auth.id != ""',
@@ -285,10 +284,10 @@ async function seedRooms() {
 
 async function seedStaff() {
   const staff = [
-    { name: 'Daylin', email: 'daylin@gr8escape.co.za', role: 'grandmaster', avatar_color: '#E53935', is_active: true, password: '2536' },
-    { name: 'Thabo', email: 'thabo@gr8escape.co.za', role: 'gamemaster', avatar_color: '#FFB900', is_active: true, password: '5678' },
-    { name: 'Zanele', email: 'zanele@gr8escape.co.za', role: 'gamemaster', avatar_color: '#4CAF50', is_active: true, password: '9012' },
-    { name: 'Ryan', email: 'ryan@gr8escape.co.za', role: 'gamemaster', avatar_color: '#9C27B0', is_active: true, password: '3456' },
+    { name: 'Daylin', email: 'daylin@gr8escape.co.za', role: 'grandmaster', avatar_color: '#E53935', is_active: true, pin_code: '2536', password: '2536', passwordConfirm: '2536' },
+    { name: 'Thabo', email: 'thabo@gr8escape.co.za', role: 'gamemaster', avatar_color: '#FFB900', is_active: true, pin_code: '5678', password: '5678', passwordConfirm: '5678' },
+    { name: 'Zanele', email: 'zanele@gr8escape.co.za', role: 'gamemaster', avatar_color: '#4CAF50', is_active: true, pin_code: '9012', password: '9012', passwordConfirm: '9012' },
+    { name: 'Ryan', email: 'ryan@gr8escape.co.za', role: 'gamemaster', avatar_color: '#9C27B0', is_active: true, pin_code: '3456', password: '3456', passwordConfirm: '3456' },
   ]
 
   for (const s of staff) {

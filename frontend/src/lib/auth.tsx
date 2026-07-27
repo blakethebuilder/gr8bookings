@@ -9,7 +9,7 @@ export interface Staff {
   role: 'grandmaster' | 'gamemaster'
   avatar_color: string
   is_active: boolean
-  password: string
+  pin_code: string
   created: string
   updated: string
 }
@@ -39,7 +39,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // Check stored session
     const stored = localStorage.getItem('gr8_staff')
     if (stored) {
       try {
@@ -52,30 +51,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const login = async (email: string, password: string): Promise<{success: boolean; error?: string}> => {
     try {
-      const result = await pb.collection('staff').getFirstListItem<Staff>(
-        `email = "${email}" && is_active = true`
-      )
-
-      if (!result) {
+      const { record, token } = await pb.collection('staff').authWithPassword(email, password)
+      if (!record) {
         return { success: false, error: 'Staff account not found' }
       }
-
-      // Accept either password or legacy pin_code field
-      const pw = (result as any).password || (result as any).pin_code
-      if (pw !== password) {
-        return { success: false, error: 'Invalid password' }
+      if (!record.is_active) {
+        return { success: false, error: 'Account is deactivated' }
       }
-
-      setStaff(result)
-      localStorage.setItem('gr8_staff', JSON.stringify(result))
+      setStaff(record as unknown as Staff)
+      localStorage.setItem('gr8_staff', JSON.stringify(record))
       return { success: true }
     } catch (err: any) {
       console.error('[Auth] Login failed:', err)
-      return { success: false, error: err?.message || 'Connection failed — is PocketBase running?' }
+      return { success: false, error: err?.message || 'Invalid email or PIN code' }
     }
   }
 
   const logout = () => {
+    pb.authStore.clear()
     setStaff(null)
     localStorage.removeItem('gr8_staff')
   }
