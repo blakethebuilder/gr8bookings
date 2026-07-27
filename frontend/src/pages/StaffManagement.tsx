@@ -8,7 +8,7 @@ export default function StaffManagement() {
   const [loading, setLoading] = useState(true)
   const [showModal, setShowModal] = useState(false)
   const [editingStaff, setEditingStaff] = useState<Staff | null>(null)
-  const [form, setForm] = useState({ name: '', email: '', phone: '', role: 'gamemaster' as Staff['role'], password: '' })
+  const [form, setForm] = useState({ name: '', email: '', phone: '', role: 'gamemaster' as Staff['role'], password: '', passwordConfirm: '' })
   const [saving, setSaving] = useState(false)
   const [visiblePins, setVisiblePins] = useState<Record<string, boolean>>({})
 
@@ -33,7 +33,7 @@ export default function StaffManagement() {
 
   const openEdit = (s: Staff) => {
     setEditingStaff(s)
-    setForm({ name: s.name, email: s.email, phone: s.phone, role: s.role, password: s.password })
+    setForm({ name: s.name, email: s.email, phone: s.phone, role: s.role, password: '', passwordConfirm: '' })
     setShowModal(true)
   }
 
@@ -42,16 +42,29 @@ export default function StaffManagement() {
     setSaving(true)
     try {
       const colors = ['#e63946', '#f4a261', '#2a9d8f', '#264653', '#e9c46a', '#6a4c93']
-      const data = {
-        ...form,
+      const data: Record<string, any> = {
+        name: form.name,
+        email: form.email,
+        phone: form.phone,
+        role: form.role,
         avatar_color: editingStaff?.avatar_color || colors[Math.floor(Math.random() * colors.length)],
         is_active: editingStaff?.is_active ?? true,
+        pin_code: form.password,
       }
 
       if (editingStaff) {
+        // Only set password if a new one was entered
+        if (form.password) {
+          data.password = form.password
+          data.passwordConfirm = form.password
+        }
         await pb.collection('staff').update(editingStaff.id, data)
       } else {
-        await pb.collection('staff').create(data)
+        await pb.collection('staff').create({
+          ...data,
+          password: form.password,
+          passwordConfirm: form.password,
+        })
       }
       setShowModal(false)
       loadStaff()
@@ -132,7 +145,7 @@ export default function StaffManagement() {
                       onClick={() => setVisiblePins(prev => ({...prev, [s.id]: !prev[s.id]}))}
                       className="hover:text-white transition-colors cursor-pointer inline-flex items-center gap-1.5"
                     >
-                      {visiblePins[s.id] ? s.password : '••••••••'}
+                      {visiblePins[s.id] ? s.pin_code : '••••••••'}
                       {visiblePins[s.id] ? <EyeOff size={14} /> : <Eye size={14} />}
                     </button>
                   </td>
