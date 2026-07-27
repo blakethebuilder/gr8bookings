@@ -50,22 +50,19 @@ export default function StaffManagement() {
         avatar_color: editingStaff?.avatar_color || colors[Math.floor(Math.random() * colors.length)],
         is_active: editingStaff?.is_active ?? true,
         is_working: editingStaff?.is_working ?? true,
-        pin_code: form.password,
+      }
+
+      // Only set pin_code + password if provided (new staff requires both)
+      if (form.password) {
+        data.pin_code = form.password
+        data.password = form.password
+        data.passwordConfirm = form.password
       }
 
       if (editingStaff) {
-        // Only set password if a new one was entered
-        if (form.password) {
-          data.password = form.password
-          data.passwordConfirm = form.password
-        }
         await pb.collection('staff').update(editingStaff.id, data)
       } else {
-        await pb.collection('staff').create({
-          ...data,
-          password: form.password,
-          passwordConfirm: form.password,
-        })
+        await pb.collection('staff').create(data)
       }
       setShowModal(false)
       loadStaff()
