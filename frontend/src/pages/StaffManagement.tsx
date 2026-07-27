@@ -27,7 +27,7 @@ export default function StaffManagement() {
 
   const openAdd = () => {
     setEditingStaff(null)
-    setForm({ name: '', email: '', phone: '', role: 'gamemaster', password: '' })
+    setForm({ name: '', email: '', phone: '', role: 'gamemaster', password: '', passwordConfirm: '' })
     setShowModal(true)
   }
 
