@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Outlet, NavLink, useNavigate } from 'react-router-dom'
 import {
   LayoutDashboard, CalendarDays, Calendar, BookOpen, Settings, LogOut,
-  Users, Crown, Menu, X
+  Users, Crown, Menu, X, DollarSign
 } from 'lucide-react'
 import { useAuth } from '../lib/auth'
 
@@ -13,6 +13,7 @@ const gmNavItems = [
 
 const grandmasterNavItems = [
   { to: '/grandmaster', icon: LayoutDashboard, label: 'Dashboard' },
+  { to: '/finances', icon: DollarSign, label: 'Finances' },
   { to: '/calendar', icon: CalendarDays, label: 'Calendar' },
   { to: '/gm', icon: CalendarDays, label: 'My Games' },
   { to: '/rooms', icon: Calendar, label: 'Rooms' },

@@ -1,19 +1,15 @@
 import { useEffect, useState, useMemo } from 'react'
 import {
-  TrendingUp,
-  DollarSign,
   Users,
   Calendar,
   Clock,
   Loader2,
-  BarChart3,
   Award,
   AlertCircle,
-  CheckCircle,
-  XCircle,
-  Hourglass,
+  ArrowUpRight,
   BedDouble,
 } from 'lucide-react'
+import { Link } from 'react-router-dom'
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, isWithinInterval, parseISO } from 'date-fns'
 import pb, { type Room, type Booking, type TimeSlot } from '../lib/pocketbase'
 import { useAuth } from '../lib/auth'
@@ -126,15 +122,6 @@ export default function GrandmasterDashboard() {
   const monthEnd = endOfMonth(now)
 
   const paidBookings = useMemo(() => bookings.filter(b => b.payment_status === 'paid'), [bookings])
-
-  // PocketBase v0.25 doesn't expose 'created' field — show all-time revenue for now
-  const revenueThisWeek = useMemo(() => {
-    return paidBookings.reduce((sum, b) => sum + b.total_amount, 0)
-  }, [paidBookings])
-
-  const revenueThisMonth = useMemo(() => {
-    return paidBookings.reduce((sum, b) => sum + b.total_amount, 0)
-  }, [paidBookings])
 
   const revenueAllTime = useMemo(() => {
     return paidBookings.reduce((sum, b) => sum + b.total_amount, 0)
@@ -270,75 +257,24 @@ export default function GrandmasterDashboard() {
         </p>
       </div>
 
-      {/* Revenue Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-        <div className="card-dark">
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-gr8-red/10 text-gr8-red">
-              <TrendingUp size={20} />
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-white">R{revenueThisWeek.toLocaleString()}</p>
-              <p className="text-xs text-gray-500 uppercase tracking-wider">Revenue This Week</p>
-            </div>
+      {/* Revenue teaser — links to full Finances page */}
+      <Link
+        to="/finances"
+        className="card-dark mb-8 flex items-center justify-between group hover:border-gr8-gold/30 transition-colors cursor-pointer block"
+      >
+        <div className="flex items-center gap-4">
+          <div className="p-2 rounded-lg bg-gr8-gold/10 text-gr8-gold">
+            <Award size={20} />
+          </div>
+          <div>
+            <p className="text-xs text-gray-500 uppercase tracking-wider">Revenue All Time</p>
+            <p className="text-xl font-bold text-white">R{revenueAllTime.toLocaleString()}</p>
           </div>
         </div>
-        <div className="card-dark">
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-gr8-gold/10 text-gr8-gold">
-              <DollarSign size={20} />
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-white">R{revenueThisMonth.toLocaleString()}</p>
-              <p className="text-xs text-gray-500 uppercase tracking-wider">Revenue This Month</p>
-            </div>
-          </div>
+        <div className="flex items-center gap-1 text-gr8-gold text-sm font-medium group-hover:gap-2 transition-all">
+          View Finances <ArrowUpRight size={16} />
         </div>
-        <div className="card-dark">
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-green-500/10 text-green-400">
-              <BarChart3 size={20} />
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-white">R{revenueAllTime.toLocaleString()}</p>
-              <p className="text-xs text-gray-500 uppercase tracking-wider">Revenue All Time</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Deposit vs Full Payment Summary */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-        <div className="card-dark">
-          <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">Deposits Collected</p>
-          <p className="text-2xl font-bold text-gr8-gold">
-            R{bookings.filter(b => b.payment_type === 'deposit' && b.payment_status === 'paid')
-              .reduce((sum, b) => sum + (b.deposit_amount || 640), 0).toLocaleString()}
-          </p>
-          <p className="text-xs text-gray-600">{bookings.filter(b => b.payment_type === 'deposit').length} bookings</p>
-        </div>
-        <div className="card-dark">
-          <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">Balance Due at Venue</p>
-          <p className="text-2xl font-bold text-yellow-400">
-            R{bookings.filter(b => b.payment_type === 'deposit' && b.status !== 'cancelled')
-              .reduce((sum, b) => sum + (b.balance_due || 0), 0).toLocaleString()}
-          </p>
-          <p className="text-xs text-gray-600">To collect on arrival</p>
-        </div>
-        <div className="card-dark">
-          <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">Full Payments</p>
-          <p className="text-2xl font-bold text-green-400">
-            R{bookings.filter(b => b.payment_type === 'full' && b.payment_status === 'paid')
-              .reduce((sum, b) => sum + b.total_amount, 0).toLocaleString()}
-          </p>
-          <p className="text-xs text-gray-600">{bookings.filter(b => b.payment_type === 'full').length} bookings</p>
-        </div>
-        <div className="card-dark">
-          <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">Total Revenue</p>
-          <p className="text-2xl font-bold text-white">R{revenueAllTime.toLocaleString()}</p>
-          <p className="text-xs text-gray-600">All confirmed bookings</p>
-        </div>
-      </div>
+      </Link>
 
       {/* Bookings Overview */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
@@ -431,22 +367,18 @@ export default function GrandmasterDashboard() {
                       <div className="w-3 h-3 rounded-full" style={{ backgroundColor: room.color }} />
                       <span className="font-bold text-white">{room.name}</span>
                     </div>
-                    <span className="text-xs text-gray-500">R{revenue.toLocaleString()} revenue</span>
+                    <span className="text-xs text-gray-500">{utilization}% utilization</span>
                   </div>
                   <div className="w-full bg-gray-700/50 rounded-full h-2 mb-2">
                     <div
                       className="h-2 rounded-full transition-all"
-                      style={{
-                        width: `${utilization}%`,
-                        backgroundColor: room.color,
-                      }}
+                      style={{ width: `${utilization}%`, backgroundColor: room.color }}
                     />
                   </div>
                   <div className="flex justify-between text-xs text-gray-500">
                     <span>{totalBookings} total bookings</span>
                     <span>{thisWeekBookings} this week</span>
                     <span>{thisMonthBookings} this month</span>
-                    <span className="text-gr8-gold font-medium">{utilization}% utilization</span>
                   </div>
                 </div>
               )

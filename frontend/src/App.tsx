@@ -8,6 +8,7 @@ import GrandmasterDashboard from './pages/GrandmasterDashboard'
 import Rooms from './pages/Rooms'
 import Bookings from './pages/Bookings'
 import Settings from './pages/Settings'
+import Finances from './pages/Finances'
 import StaffManagement from './pages/StaffManagement'
 import Book from './pages/Book'
 import BookConfirm from './pages/BookConfirm'
@@ -43,6 +44,7 @@ function App() {
           <Route path="/grandmaster" element={<GrandmasterDashboard />} />
           <Route path="/staff" element={<StaffManagement />} />
           <Route path="/settings" element={<Settings />} />
+          <Route path="/finances" element={<Finances />} />
         </Route>
       </Route>
 
