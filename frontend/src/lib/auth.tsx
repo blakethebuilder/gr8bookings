@@ -41,11 +41,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const stored = localStorage.getItem('gr8_staff')
-    if (stored) {
+    if (stored && pb.authStore.isValid) {
       try {
         const s = JSON.parse(stored)
         setStaff(s)
       } catch {}
+    } else {
+      localStorage.removeItem('gr8_staff')
     }
     setLoading(false)
   }, [])
