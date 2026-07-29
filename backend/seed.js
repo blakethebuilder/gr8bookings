@@ -298,10 +298,10 @@ async function seedRooms() {
 
 async function seedStaff() {
   const staff = [
-    { name: 'Daylin', email: 'daylin@gr8escape.co.za', role: 'grandmaster', avatar_color: '#E53935', is_active: true, is_working: false, pin_code: '2536', password: '2536', passwordConfirm: '2536' },
-    { name: 'Thabo', email: 'thabo@gr8escape.co.za', role: 'gamemaster', avatar_color: '#FFB900', is_active: true, is_working: false, pin_code: '5678', password: '5678', passwordConfirm: '5678' },
-    { name: 'Zanele', email: 'zanele@gr8escape.co.za', role: 'gamemaster', avatar_color: '#4CAF50', is_active: true, is_working: false, pin_code: '9012', password: '9012', passwordConfirm: '9012' },
-    { name: 'Ryan', email: 'ryan@gr8escape.co.za', role: 'gamemaster', avatar_color: '#9C27B0', is_active: true, is_working: false, pin_code: '3456', password: '3456', passwordConfirm: '3456' },
+    { name: 'Daylin', email: 'daylin@gr8escape.co.za', role: 'grandmaster', avatar_color: '#E53935', is_active: true, is_working: false, pin_code: '2536', password: 'gr8@2026', passwordConfirm: 'gr8@2026' },
+    { name: 'Thabo', email: 'thabo@gr8escape.co.za', role: 'gamemaster', avatar_color: '#FFB900', is_active: true, is_working: false, pin_code: '5678', password: 'gr8@2026', passwordConfirm: 'gr8@2026' },
+    { name: 'Zanele', email: 'zanele@gr8escape.co.za', role: 'gamemaster', avatar_color: '#4CAF50', is_active: true, is_working: false, pin_code: '9012', password: 'gr8@2026', passwordConfirm: 'gr8@2026' },
+    { name: 'Ryan', email: 'ryan@gr8escape.co.za', role: 'gamemaster', avatar_color: '#9C27B0', is_active: true, is_working: false, pin_code: '3456', password: 'gr8@2026', passwordConfirm: 'gr8@2026' },
   ]
 
   for (const s of staff) {
