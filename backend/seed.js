@@ -305,6 +305,14 @@ async function seedStaff() {
   ]
 
   for (const s of staff) {
+    // ponytail: skip existing staff instead of catch-and-log
+    try {
+      const existing = await api('GET', `/api/collections/staff/records?filter=(email='${s.email}')&perPage=1`)
+      if (existing?.items?.length > 0) {
+        console.log(`  Staff: ${s.name} (exists)`)
+        continue
+      }
+    } catch {}
     try {
       await api('POST', '/api/collections/staff/records', s)
       console.log(`✓ Staff: ${s.name} (${s.role})`)
