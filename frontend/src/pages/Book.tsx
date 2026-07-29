@@ -3,7 +3,6 @@ import { useSearchParams } from 'react-router-dom'
 import { Calendar, Users, Clock, ChevronRight, CreditCard, Loader2, CheckCircle } from 'lucide-react'
 import { format, addDays, isSameDay, parseISO } from 'date-fns'
 import pb, { type Room, type TimeSlot } from '../lib/pocketbase'
-import { md5 } from '../lib/md5'
 import { useToast } from '../lib/toast'
 
 type Step = 'rooms' | 'date' | 'slot' | 'details' | 'payment' | 'confirm'
@@ -188,37 +187,33 @@ export default function Book() {
         // Demo mode — skip Payfast, go straight to confirmation
         window.location.href = `/book/confirm/${reference}`
       } else {
-        // Build Payfast form and submit
-        const merchantKey = get('payfast_merchant_key')
-        const passphrase = get('payfast_passphrase')
         const mode = get('payfast_mode')
         const processUrl = mode === 'live'
           ? 'https://www.payfast.co.za/eng/process'
           : 'https://sandbox.payfast.co.za/eng/process'
 
-        // Build params for signature generation (alphabetical order, exclude passphrase & signature)
-        const paramPairs: [string, string][] = [
-          ['merchant_id', merchantId],
-          ['merchant_key', merchantKey],
-          ['return_url', `${window.location.origin}/book/confirm/${reference}`],
-          ['cancel_url', `${window.location.origin}/book`],
-          ['notify_url', `${window.location.origin}/api/payfast/itn`],
-          ['name_first', formData.playerName.split(' ')[0] || ''],
-          ['name_last', formData.playerName.split(' ').slice(1).join(' ') || ''],
-          ['email_address', formData.playerEmail],
-          ['m_payment_id', reference],
-          ['amount', amountToPay.toFixed(2)],
-          ['item_name', `Escape Room - ${formData.room.name}`],
-          ['item_description', `Booking ${reference} - ${formData.playerCount} players`],
-          ['custom_str1', booking.id],
-          ['custom_str2', reference],
-        ]
-
-        // Generate signature: sort non-empty params, encode, ALWAYS append passphrase, MD5
-        const sorted = paramPairs.filter(([, v]) => v !== '').sort((a, b) => a[0].localeCompare(b[0]))
-        let signatureString = sorted.map(([k, v]) => `${k}=${encodeURIComponent(v).replace(/%20/g, '+')}`).join('&')
-        // Payfast always expects &passphrase= (even if empty)
-        signatureString += `&passphrase=${encodeURIComponent(passphrase || '').replace(/%20/g, '+')}`
+        // Server-side signature — keeps merchant_key + passphrase hidden
+        const sigRes = await fetch('/api/payfast/sign', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            merchant_id: merchantId,
+            return_url: `${window.location.origin}/book/confirm/${reference}`,
+            cancel_url: `${window.location.origin}/book`,
+            notify_url: `${window.location.origin}/api/payfast/itn`,
+            name_first: formData.playerName.split(' ')[0] || '',
+            name_last: formData.playerName.split(' ').slice(1).join(' ') || '',
+            email_address: formData.playerEmail,
+            m_payment_id: reference,
+            amount: amountToPay.toFixed(2),
+            item_name: `Escape Room - ${formData.room.name}`,
+            item_description: `Booking ${reference} - ${formData.playerCount} players`,
+            custom_str1: booking.id,
+            custom_str2: reference,
+          }),
+        })
+        if (!sigRes.ok) throw new Error('Failed to get payment signature')
+        const { signature, params } = await sigRes.json()
 
         // Build hidden form
         const form = document.createElement('form')
@@ -226,16 +221,15 @@ export default function Book() {
         form.action = processUrl
         form.style.display = 'none'
 
-        // Generate signature
-        const signature = generateMD5(signatureString)
-
         // Add all params as hidden inputs
-        for (const [key, value] of sorted) {
-          const input = document.createElement('input')
-          input.type = 'hidden'
-          input.name = key
-          input.value = value
-          form.appendChild(input)
+        for (const [key, value] of Object.entries(params)) {
+          if (value) {
+            const input = document.createElement('input')
+            input.type = 'hidden'
+            input.name = key
+            input.value = value as string
+            form.appendChild(input)
+          }
         }
 
         // Add signature
@@ -255,9 +249,6 @@ export default function Book() {
       setSubmitting(false)
     }
   }
-
-  // MD5 signature for Payfast
-  const generateMD5 = (str: string): string => md5(str)
 
   if (loading) {
     return (

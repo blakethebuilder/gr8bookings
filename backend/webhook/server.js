@@ -263,7 +263,7 @@ app.post('/api/payfast/sign', (req, res) => {
     }
 
     const params = {
-      merchant_id: merchantId,
+      merchant_id: merchant_id,
       merchant_key: merchantKey,
       return_url: return_url || '',
       cancel_url: cancel_url || '',
