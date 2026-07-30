@@ -1,12 +1,6 @@
-const CACHE_NAME = 'gr8escape-v4'
-const STATIC_ASSETS = ['/', '/login', '/availability', '/book']
+const CACHE_NAME = 'gr8escape-v5'
 
-self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(STATIC_ASSETS))
-  )
-  self.skipWaiting()
-})
+self.addEventListener('install', () => self.skipWaiting())
 
 self.addEventListener('activate', (event) => {
   event.waitUntil(
@@ -18,14 +12,21 @@ self.addEventListener('activate', (event) => {
 })
 
 self.addEventListener('fetch', (event) => {
-  // Network first for API calls, cache first for static
-  if (event.request.url.includes('/api/')) {
-    event.respondWith(
-      fetch(event.request).catch(() => caches.match(event.request))
-    )
-  } else {
-    event.respondWith(
-      caches.match(event.request).then((cached) => cached || fetch(event.request))
-    )
+  const { request } = event
+  const url = new URL(request.url)
+
+  // API: network-first
+  if (url.pathname.startsWith('/api/')) {
+    event.respondWith(fetch(request).catch(() => caches.match(request)))
+    return
   }
+
+  // Navigation (HTML): network-first — busts stale index.html on deploy
+  if (request.mode === 'navigate') {
+    event.respondWith(fetch(request).catch(() => caches.match(request)))
+    return
+  }
+
+  // Static assets (chunked with hashes): cache-first
+  event.respondWith(caches.match(request).then((cached) => cached || fetch(request)))
 })
