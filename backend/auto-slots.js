@@ -16,7 +16,7 @@ async function api(method, path, data = null) {
     method,
     headers: {
       'Content-Type': 'application/json',
-      ...(token ? { Authorization: token } : {}),
+      ...(token ? { Authorization: 'Bearer ' + token } : {}),
     },
   }
   if (data) opts.body = JSON.stringify(data)
@@ -117,7 +117,7 @@ async function main() {
           const dateStr = formatDate(date)
 
           // Check if slot already exists
-          const existing = await api('GET', `/api/collections/time_slots/records?filter=(room="${room.id}")&&(date~"${dateStr}")&&(start_time="${slot.start}")&perPage=1`)
+          const existing = await api('GET', `/api/collections/time_slots/records?filter=(room="${room.id}")%26%26(date~"${dateStr}")%26%26(start_time="${slot.start}")&perPage=1`)
           if (existing.totalItems > 0) continue
 
           await api('POST', '/api/collections/time_slots/records', {
