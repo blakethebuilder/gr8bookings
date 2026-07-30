@@ -229,7 +229,7 @@ export default function BookConfirm() {
         </button>
 
         <div className="bg-white/5 border border-gray-700/50 rounded-xl p-4 mb-8 text-sm text-gray-400 text-left">
-          <p className="mb-2">A confirmation email will be sent to <strong className="text-white">{booking.customer_email}</strong></p>
+          <p className="mb-2">Save your reference <strong className="text-white font-mono">{booking.reference}</strong> — you'll need it for waivers and changes.</p>
           <p>Please arrive <strong className="text-white">15 minutes early</strong>. No phones or recording devices allowed in the rooms.</p>
         </div>
 
