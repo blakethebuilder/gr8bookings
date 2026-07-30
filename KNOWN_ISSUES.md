@@ -53,16 +53,7 @@
 | Unit tests | Not implemented |
 | E2E tests | Not implemented |
 
-## Architecture Notes
-
-### Staff Authentication Migration Path
-The current password-based auth uses a regular PocketBase collection (`staff`) rather than PocketBase's built-in auth system. This means collection rules must remain public for login to work. Recommended migration:
-1. Create a proper PocketBase auth collection for staff
-2. Migrate staff records to the auth collection
-3. Update the frontend to use `pb.collection('staff').authWithPassword()` instead of password comparison
-4. Then lock down collection rules to authenticated only
-
-### Cross-Domain Integration
+## Cross-Domain Integration
 The marketing site (gr8.smartintegrate.co.za) links to the booking app (gr8bookings.smartintegrate.co.za) via URL params (?room=slug). Options to improve:
 - Reverse-proxy /book on the Astro site to the booking container
 - Relax X-Frame-Options to allow iframe embedding

@@ -26,7 +26,7 @@
 ## Routes
 | Route | Access | Page |
 |-------|--------|------|
-| `/login` | Public | Staff login (PIN-based) |
+| `/login` | Public | Staff login (email + password) |
 | `/availability` | Public | Live calendar with slots |
 | `/book` | Public | Customer booking flow |
 | `/book?room=<slug>` | Public | Pre-select room from website |
