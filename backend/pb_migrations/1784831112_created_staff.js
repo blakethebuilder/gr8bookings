@@ -1,8 +1,8 @@
 /// <reference path="../pb_data/types.d.ts" />
 migrate((app) => {
   const collection = new Collection({
-    "createRule": null,
-    "deleteRule": null,
+    "createRule": "@request.auth.id != \"\"",
+    "deleteRule": "@request.auth.id != \"\"",
     "fields": [
       {
         "autogeneratePattern": "[a-z0-9]{15}",
@@ -33,18 +33,50 @@ migrate((app) => {
         "type": "text"
       },
       {
-        "autogeneratePattern": "",
         "hidden": false,
-        "id": "text3885137012",
-        "max": 0,
-        "min": 0,
+        "id": "_email",
         "name": "email",
-        "pattern": "",
         "presentable": false,
-        "primaryKey": false,
         "required": true,
-        "system": false,
+        "system": true,
+        "type": "email",
+        "unique": true
+      },
+      {
+        "hidden": true,
+        "id": "_password",
+        "name": "password",
+        "presentable": false,
+        "required": true,
+        "system": true,
         "type": "text"
+      },
+      {
+        "hidden": true,
+        "id": "_tokenKey",
+        "name": "tokenKey",
+        "presentable": false,
+        "required": false,
+        "system": true,
+        "type": "text"
+      },
+      {
+        "hidden": false,
+        "id": "_verified",
+        "name": "verified",
+        "presentable": false,
+        "required": false,
+        "system": true,
+        "type": "bool"
+      },
+      {
+        "hidden": false,
+        "id": "_emailVisibility",
+        "name": "emailVisibility",
+        "presentable": false,
+        "required": false,
+        "system": true,
+        "type": "bool"
       },
       {
         "autogeneratePattern": "",
@@ -113,15 +145,45 @@ migrate((app) => {
       }
     ],
     "id": "pbc_2301119865",
-    "indexes": [
-      "CREATE UNIQUE INDEX idx_staff_email ON staff (email)"
-    ],
-    "listRule": null,
+    "indexes": [],
+    "listRule": "@request.auth.id != \"\"",
     "name": "staff",
     "system": false,
-    "type": "base",
-    "updateRule": null,
-    "viewRule": null
+    "type": "auth",
+    "updateRule": "@request.auth.id != \"\"",
+    "viewRule": "@request.auth.id != \"\"",
+    "passwordAuth": {
+      "enabled": true,
+      "identityFields": ["email"]
+    },
+    "authToken": {
+      "duration": 604800
+    },
+    "otp": {
+      "enabled": false
+    },
+    "mfa": {
+      "enabled": false
+    },
+    "oauth2": {
+      "enabled": false,
+      "providers": []
+    },
+    "passwordResetToken": {
+      "duration": 1800
+    },
+    "emailChangeToken": {
+      "duration": 1800
+    },
+    "verificationToken": {
+      "duration": 259200
+    },
+    "fileToken": {
+      "duration": 1800
+    },
+    "authAlert": {
+      "enabled": false
+    }
   });
 
   return app.save(collection);

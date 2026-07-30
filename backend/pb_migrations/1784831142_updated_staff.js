@@ -8,7 +8,7 @@ migrate((app) => {
     "deleteRule": "@request.auth.id != \"\"",
     "listRule": "@request.auth.id != \"\"",
     "updateRule": "@request.auth.id != \"\"",
-    "viewRule": ""
+    "viewRule": "@request.auth.id != \"\""
   }, collection)
 
   return app.save(collection)
