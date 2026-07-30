@@ -67,9 +67,7 @@
 - [x] Phase 10: Auto slot generation + daily cron
 - [x] Phase 11: Security hardening (server-side Payfast, rate limiting, input validation)
 - [x] Phase 12: Rooms CRUD (add/edit/delete/toggle active)
-- [x] Phase 8: Mobile responsive + PWA
-- [x] Phase 9: Deposit vs full payment options
-- [x] Phase 10: Auto slot generation + daily cron
+- [x] Phase 13: SW cache busting + per-room slot generation
 
 ## Known Issues
 See `KNOWN_ISSUES.md` for security, feature gaps, and polish items.

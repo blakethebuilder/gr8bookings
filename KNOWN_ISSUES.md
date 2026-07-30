@@ -16,6 +16,7 @@
 |---------|--------|-------|
 | WhatsApp reminders | Not started | Evolution API integration needed |
 | Email notifications | Not started | Confirmation emails, reminders |
+| Manager role | Not started | Requested — between GM and grandmaster |
 | Booking cancellation flow | ✅ Done | Customer self-service + admin cancel |
 | Murder mystery bookings | Not started | Separate product line (R200/pp @ Doppio Zero) |
 | Add-on packages | Not started | Birthday, Bachelor, Challenge Wheel |

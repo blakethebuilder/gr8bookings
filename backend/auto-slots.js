@@ -98,8 +98,7 @@ async function main() {
     const daysAhead = existingSlots.totalItems > 0 ? DAYS_AHEAD : DAYS_AHEAD * 2 // Generate more if behind
 
     if (existingSlots.totalItems > 0) {
-      console.log(`  Slots exist beyond ${MIN_DAYS_BUFFER} days — OK`)
-      return
+      console.log(`  Slots exist beyond ${MIN_DAYS_BUFFER} days — skipping gap check`)
     }
 
     console.log(`  Generating ${daysAhead} days of slots...`)
