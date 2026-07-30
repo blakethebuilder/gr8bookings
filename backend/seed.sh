@@ -10,16 +10,6 @@ for i in $(seq 1 30); do
   sleep 1
 done
 
-# Check if already seeded
-ROOMS_COUNT=$(wget -q -O - "http://localhost:8090/api/collections/rooms/records?perPage=1" 2>/dev/null | grep -o '"totalItems":[0-9]*' | cut -d: -f2)
-
-if [ "$ROOMS_COUNT" = "0" ] || [ -z "$ROOMS_COUNT" ]; then
-  echo "🌱 Fresh install — running seed..."
-  cd /app/backend && node seed.js http://localhost:8090
-else
-  echo "✓ Already seeded (${ROOMS_COUNT} rooms)"
-fi
-
 # Auto-generate slots if fewer than 14 days ahead exist
 echo "🔄 Checking slot availability..."
 cd /app/backend && node auto-slots.js http://localhost:8090
